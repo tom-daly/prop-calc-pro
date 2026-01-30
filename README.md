@@ -2,7 +2,11 @@
 
 A comprehensive real estate investment calculator for analyzing rental property deals. Single-file web application that runs entirely in your browser with no server required.
 
-![PropCalc Pro Screenshot](screenshot.png)
+### DSCR Mode
+![PropCalc Pro DSCR Mode](screenshot-dscr.png)
+
+### Traditional Mode
+![PropCalc Pro Traditional Mode](screenshot-traditional.png)
 
 ## Features
 
