@@ -197,36 +197,41 @@
     /* Carry Modal */
     .carry-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
     .carry-modal.open { display: flex; }
-    .carry-modal-content { background: #fff; border-radius: 12px; padding: 20px; width: 600px; max-height: 85vh; overflow: auto; }
-    .carry-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .carry-modal-content { background: #fff; border-radius: 12px; padding: 20px; width: 1150px; }
+    .carry-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .carry-modal-header h3 { font-size: 16px; display: flex; align-items: center; gap: 8px; }
     .carry-modal-close { border: none; background: none; font-size: 24px; cursor: pointer; color: var(--text-muted); }
     .carry-modal-close:hover { color: var(--text); }
 
-    .tranche-list { margin-bottom: 16px; }
-    .tranche-row { display: grid; grid-template-columns: 1fr 100px 100px 32px; gap: 8px; align-items: end; margin-bottom: 8px; padding: 10px; background: var(--bg); border-radius: 6px; }
-    .tranche-row.header { background: none; padding: 0 10px; margin-bottom: 4px; font-size: 10px; text-transform: uppercase; color: var(--text-muted); }
+    .tranche-list { margin-bottom: 8px; }
+    .tranche-row { display: grid; grid-template-columns: 1fr 120px 80px 80px 28px 28px; gap: 6px; align-items: center; margin-bottom: 6px; padding: 6px 8px; background: var(--bg); border-radius: 6px; }
+    .tranche-row.header { background: none; padding: 0 8px; margin-bottom: 2px; font-size: 9px; text-transform: uppercase; color: var(--text-muted); }
+    .tranche-row .max-btn { width: 24px; height: 24px; border: none; background: #dbeafe; color: #2563eb; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+    .tranche-row .max-btn:hover { background: #bfdbfe; }
+    .tranche-row input { padding: 6px 8px; font-size: 12px; }
     .tranche-row .input-group { margin: 0; }
-    .tranche-row .remove-btn { width: 28px; height: 28px; border: none; background: #fee2e2; color: #dc2626; border-radius: 4px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+    .tranche-row .remove-btn { width: 24px; height: 24px; border: none; background: #fee2e2; color: #dc2626; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
     .tranche-row .remove-btn:hover { background: #fecaca; }
     .tranche-row .remove-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .tranche-remainder { font-size: 11px; color: var(--text-muted); padding: 6px 8px; background: var(--card); border: 1px dashed var(--border); border-radius: 6px; }
+    .tranche-remainder { font-size: 10px; color: var(--text-muted); padding: 4px 8px; background: var(--card); border: 1px dashed var(--border); border-radius: 4px; }
 
-    .add-tranche-btn { padding: 8px 16px; border: 1px dashed var(--border); background: var(--card); border-radius: 6px; cursor: pointer; font-size: 12px; color: var(--text-muted); width: 100%; margin-bottom: 16px; }
+    .add-tranche-btn { padding: 6px 12px; border: 1px dashed var(--border); background: var(--card); border-radius: 4px; cursor: pointer; font-size: 11px; color: var(--text-muted); width: 100%; margin-bottom: 10px; }
     .add-tranche-btn:hover { background: var(--bg); color: var(--text); }
     .add-tranche-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .carry-summary { background: var(--highlight); color: #fff; border-radius: 8px; padding: 12px; margin-bottom: 16px; }
-    .carry-summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px; }
+    .carry-summary { background: var(--highlight); color: #fff; border-radius: 6px; padding: 10px; margin-bottom: 10px; font-size: 11px; }
+    .carry-summary-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
     .carry-summary-row:last-child { margin-bottom: 0; }
-    .carry-summary-row .label { color: var(--text-light); }
+    .carry-summary-row .label { color: rgba(255,255,255,0.8); }
     .carry-summary-row .value { font-weight: 600; }
-    .carry-summary-row.total { border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px; margin-top: 8px; }
-    .carry-summary-row.total .value { color: var(--primary); font-size: 14px; }
+    .carry-summary-row.total { border-top: 1px solid rgba(255,255,255,0.2); padding-top: 6px; margin-top: 6px; }
+    .carry-summary-row.total .value { color: var(--primary); font-size: 13px; }
 
-    .schedule-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    .schedule-table th { text-align: left; padding: 8px 6px; border-bottom: 2px solid var(--border); font-size: 10px; text-transform: uppercase; color: var(--text-muted); }
-    .schedule-table td { padding: 6px; border-bottom: 1px solid var(--border); }
+    .schedule-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    .schedule-table th { text-align: right; padding: 6px 8px; border-bottom: 2px solid var(--border); font-size: 9px; text-transform: uppercase; color: var(--text-muted); }
+    .schedule-table th:first-child { text-align: left; }
+    .schedule-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); text-align: right; }
+    .schedule-table td:first-child { text-align: left; }
     .schedule-table tr:last-child td { border-bottom: none; }
     .schedule-table .month-col { font-weight: 500; }
     .schedule-table .total-col { font-weight: 600; background: var(--bg); }
@@ -442,7 +447,7 @@
       <!-- Mode Toggle -->
       <div class="mode-tabs">
         <button class="mode-tab active" onclick="setMode('traditional')">Traditional</button>
-        <button class="mode-tab" onclick="setMode('dscr')">DSCR</button>
+        <button class="mode-tab" onclick="setMode('dscr')">Cash-Carry-Refi-DSCR</button>
       </div>
 
       <!-- Acquisition Details -->
@@ -1049,51 +1054,52 @@
         <button class="carry-modal-close" onclick="closeCarryModal()">×</button>
       </div>
 
-      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
-        Configure multiple carry tranches with different rates. Tranches fill in order from first to last.
-        Any remaining balance uses the default carry rate.
-      </p>
-
-      <div class="tranche-row header">
-        <span>Tranche Name</span>
-        <span>Amount</span>
-        <span>Rate %</span>
-        <span></span>
-      </div>
-      <div id="trancheList" class="tranche-list"></div>
-      <button id="addTrancheBtn" class="add-tranche-btn" onclick="addTranche()">+ Add Tranche</button>
-
-      <div id="remainderInfo" class="tranche-remainder" style="margin-bottom: 16px;"></div>
-
-      <div id="carrySummary" class="carry-summary"></div>
-
-      <div style="margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px;">
-        <h4 style="font-size: 11px; margin-bottom: 10px; color: var(--text-muted); text-transform: uppercase;">Carry Period Cash Flow Analysis</h4>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-          <div class="input-group">
-            <label>Rent During Carry (%)</label>
-            <div class="input-wrap">
-              <input type="number" id="carryRentPercent" value="0" min="0" max="100" oninput="updateCarrySchedule()">
-              <span class="input-prefix">%</span>
-            </div>
-            <span style="font-size: 9px; color: var(--text-muted);">0% = rehab/vacant, 100% = fully rented</span>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Left Column: Tranche Configuration -->
+        <div>
+          <div class="tranche-row header">
+            <span>Name</span>
+            <span>Amount</span>
+            <span>Rate %</span>
+            <span>Points</span>
+            <span></span>
+            <span></span>
           </div>
-          <div id="carryPeriodAnalysis" style="font-size: 11px;"></div>
+          <div id="trancheList" class="tranche-list"></div>
+          <button id="addTrancheBtn" class="add-tranche-btn" onclick="addTranche()">+ Add Tranche</button>
+
+          <div id="remainderInfo" class="tranche-remainder"></div>
+
+          <div id="carrySummary" class="carry-summary" style="margin-top: 10px;"></div>
+
+          <div style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <label style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); white-space: nowrap;">Rent During Carry</label>
+              <div class="input-wrap" style="width: 80px;">
+                <input type="number" id="carryRentPercent" value="0" min="0" max="100" oninput="updateCarrySchedule()" style="padding: 4px 6px; font-size: 12px;">
+                <span class="input-prefix" style="font-size: 11px;">%</span>
+              </div>
+            </div>
+            <div id="carryPeriodAnalysis" style="font-size: 10px;"></div>
+          </div>
+        </div>
+
+        <!-- Right Column: Payment Schedule -->
+        <div>
+          <h4 style="font-size: 10px; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase;">Monthly Payment Schedule (Interest Only)</h4>
+          <div style="border: 1px solid var(--border); border-radius: 6px;">
+            <table class="schedule-table">
+              <thead>
+                <tr id="scheduleHeader"></tr>
+              </thead>
+              <tbody id="scheduleBody"></tbody>
+              <tfoot id="scheduleFoot"></tfoot>
+            </table>
+          </div>
         </div>
       </div>
 
-      <h4 style="font-size: 12px; margin-bottom: 8px; color: var(--text-muted);">MONTHLY PAYMENT SCHEDULE (Interest Only)</h4>
-      <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px;">
-        <table class="schedule-table">
-          <thead>
-            <tr id="scheduleHeader"></tr>
-          </thead>
-          <tbody id="scheduleBody"></tbody>
-          <tfoot id="scheduleFoot"></tfoot>
-        </table>
-      </div>
-
-      <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
+      <div style="margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end;">
         <button class="btn btn-pdf" onclick="clearTranches()">Clear All</button>
         <button class="btn btn-save" onclick="closeCarryModal()">Done</button>
       </div>
@@ -1402,7 +1408,7 @@
       document.querySelectorAll('.mode-tab').forEach(tab => {
         tab.classList.remove('active');
         if ((mode === 'traditional' && tab.textContent === 'Traditional') ||
-            (mode === 'dscr' && tab.textContent === 'DSCR')) {
+            (mode === 'dscr' && tab.textContent.includes('DSCR'))) {
           tab.classList.add('active');
         }
       });
@@ -1427,7 +1433,27 @@
       if (carryTranches.length >= 5) return;
       const names = ['Seller Financing', 'Family/Friends', 'Hard Money', 'Private Lender', 'Bridge Loan'];
       const defaultName = names[carryTranches.length] || `Tranche ${carryTranches.length + 1}`;
-      carryTranches.push({ name: defaultName, amount: 50000, rate: 0 });
+      // Calculate remaining amount
+      const totalCarry = getTotalCarryAmount();
+      const usedAmount = carryTranches.reduce((sum, t) => sum + t.amount, 0);
+      const remainingAmount = Math.max(0, totalCarry - usedAmount);
+      carryTranches.push({ name: defaultName, amount: remainingAmount, rate: 0, points: 0 });
+      renderTranches();
+      updateCarrySchedule();
+    }
+
+    function getTotalCarryAmount() {
+      const purchasePrice = getVal('purchasePrice');
+      const closingCost = getVal('closingCostDscr');
+      const rehabCost = getVal('rehabCostDscr');
+      return purchasePrice + closingCost + rehabCost;
+    }
+
+    function maxOutTranche(index) {
+      const totalCarry = getTotalCarryAmount();
+      const usedByOthers = carryTranches.reduce((sum, t, i) => i === index ? sum : sum + t.amount, 0);
+      const remaining = Math.max(0, totalCarry - usedByOthers);
+      carryTranches[index].amount = remaining;
       renderTranches();
       updateCarrySchedule();
     }
@@ -1439,7 +1465,7 @@
     }
 
     function updateTranche(index, field, value) {
-      if (field === 'amount' || field === 'rate') {
+      if (field === 'amount' || field === 'rate' || field === 'points') {
         carryTranches[index][field] = parseFloat(value) || 0;
       } else {
         carryTranches[index][field] = value;
@@ -1458,7 +1484,7 @@
       const addBtn = document.getElementById('addTrancheBtn');
 
       if (carryTranches.length === 0) {
-        list.innerHTML = '<p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 16px;">No tranches configured. All carry uses the default rate.</p>';
+        list.innerHTML = '<p style="font-size: 11px; color: var(--text-muted); text-align: center; padding: 12px;">No tranches configured. All carry uses the default rate.</p>';
       } else {
         list.innerHTML = carryTranches.map((t, i) => `
           <div class="tranche-row">
@@ -1479,6 +1505,13 @@
                 <span class="input-prefix">%</span>
               </div>
             </div>
+            <div class="input-group">
+              <div class="input-wrap">
+                <input type="number" value="${t.points || 0}" step="0.5" onchange="updateTranche(${i}, 'points', this.value)">
+                <span class="input-prefix">pts</span>
+              </div>
+            </div>
+            <button class="max-btn" onclick="maxOutTranche(${i})" title="Max out this tranche">⤢</button>
             <button class="remove-btn" onclick="removeTranche(${i})">×</button>
           </div>
         `).join('');
@@ -1540,6 +1573,13 @@
         schedule.push(row);
       }
 
+      // Calculate total points cost
+      let totalPoints = 0;
+      trancheAllocations.forEach(t => {
+        const pointsCost = t.allocated * ((t.points || 0) / 100);
+        totalPoints += pointsCost;
+      });
+
       // Update summary
       const summaryEl = document.getElementById('carrySummary');
       let summaryHtml = '';
@@ -1547,10 +1587,12 @@
       trancheAllocations.forEach(t => {
         if (t.allocated > 0) {
           const interest = t.allocated * (t.rate / 100) * (carryMonths / 12);
+          const pointsCost = t.allocated * ((t.points || 0) / 100);
+          const pointsLabel = t.points ? ` + ${t.points}pts` : '';
           summaryHtml += `
             <div class="carry-summary-row">
-              <span class="label">${t.name} ($${t.allocated.toLocaleString()} @ ${t.rate}%)</span>
-              <span class="value">$${Math.round(interest).toLocaleString()}</span>
+              <span class="label">${t.name} ($${t.allocated.toLocaleString()} @ ${t.rate}%${pointsLabel})</span>
+              <span class="value">$${Math.round(interest + pointsCost).toLocaleString()}</span>
             </div>`;
         }
       });
@@ -1564,13 +1606,16 @@
           </div>`;
       }
 
-      // Blended rate calculation
+      // Total carry = interest + points
+      const totalCarryCost = totalInterest + totalPoints;
+
+      // Blended rate calculation (interest only, not including points)
       const blendedRate = totalCashNeeded > 0 ? (totalInterest / carryMonths * 12 / totalCashNeeded * 100) : 0;
 
       summaryHtml += `
         <div class="carry-summary-row total">
-          <span class="label">Total Carry Cost (${carryMonths} months)</span>
-          <span class="value">$${Math.round(totalInterest).toLocaleString()}</span>
+          <span class="label">Total Carry Cost (${carryMonths} mo${totalPoints > 0 ? ' + points' : ''})</span>
+          <span class="value">$${Math.round(totalCarryCost).toLocaleString()}</span>
         </div>
         <div class="carry-summary-row">
           <span class="label">Blended Rate</span>
@@ -2097,7 +2142,7 @@
     }
 
     function getCarryCost() {
-      // Calculate total carry cost considering tranches
+      // Calculate total carry cost considering tranches (interest + points)
       const purchasePrice = getVal('purchasePrice');
       const closingCost = getVal('closingCostDscr');
       const rehabCost = getVal('rehabCostDscr');
@@ -2107,24 +2152,28 @@
       const totalCashNeeded = purchasePrice + closingCost + rehabCost;
 
       if (carryTranches.length === 0) {
-        // Simple calculation with default rate
+        // Simple calculation with default rate (no points)
         return totalCashNeeded * (defaultRate / 100) * (carryMonths / 12);
       }
 
       // Calculate with tranches
       let remaining = totalCashNeeded;
       let totalCarry = 0;
+      let totalPoints = 0;
 
       carryTranches.forEach(t => {
         const allocated = Math.min(t.amount, remaining);
         remaining -= allocated;
+        // Interest cost
         totalCarry += allocated * (t.rate / 100) * (carryMonths / 12);
+        // Points cost (one-time fee)
+        totalPoints += allocated * ((t.points || 0) / 100);
       });
 
-      // Remaining at default rate
+      // Remaining at default rate (no points on remainder)
       totalCarry += remaining * (defaultRate / 100) * (carryMonths / 12);
 
-      return totalCarry;
+      return totalCarry + totalPoints;
     }
 
     // Auto-save working state
