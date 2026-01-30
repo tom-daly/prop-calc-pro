@@ -1,5 +1,13 @@
 # PropCalc Pro
 
+---
+
+## ⚠️ DISCLAIMER
+
+**This calculator is in early development.** Use at your own discretion. Always cross-reference your numbers with other tools, spreadsheets, or professional financial advice before making any investment decisions. The developers assume no responsibility for any financial decisions made based on this tool's calculations.
+
+---
+
 A comprehensive real estate investment calculator for analyzing rental property deals. Single-file web application that runs entirely in your browser with no server required.
 
 ### DSCR Mode
