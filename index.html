@@ -300,7 +300,7 @@
       padding: 12px 14px;
       border-radius: 8px;
       font-size: 11px;
-      white-space: nowrap;
+      min-width: 320px;
       z-index: 50;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       margin-top: 8px;
@@ -316,7 +316,8 @@
     }
     .dscr-metric:hover .dscr-tooltip { display: block; }
     .dscr-tooltip-title { font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 12px; }
-    .dscr-tooltip-row { padding: 3px 0; color: var(--text-light); }
+    .dscr-tooltip-row { padding: 3px 0; color: var(--text-light); display: flex; justify-content: space-between; align-items: center; gap: 16px; white-space: nowrap; }
+    .dscr-price-range { font-size: 10px; font-weight: 600; opacity: 0.85; text-align: right; font-variant-numeric: tabular-nums; }
     .dscr-tooltip-row.green { color: #10b981; }
     .dscr-tooltip-row.yellow { color: #eab308; }
     .dscr-tooltip-row.orange { color: #f97316; }
@@ -913,11 +914,26 @@
           <div class="sub" id="dscrStatus">Strong</div>
           <div class="dscr-tooltip" id="dscrTooltip">
             <div class="dscr-tooltip-title">DSCR Lender Guidelines</div>
-            <div class="dscr-tooltip-row green">🟢 1.25+ — Strong / Easy Yes</div>
-            <div class="dscr-tooltip-row yellow">🟡 1.15–1.24 — Acceptable</div>
-            <div class="dscr-tooltip-row orange">🟠 1.05–1.14 — Edge Case</div>
-            <div class="dscr-tooltip-row red">🔴 1.00–1.04 — Stretch</div>
-            <div class="dscr-tooltip-row darkred">❌ &lt;1.00 — No DSCR Loan</div>
+            <div class="dscr-tooltip-row green">
+              <span class="dscr-tier-label">🟢 1.25+</span>
+              <span class="dscr-price-range"></span>
+            </div>
+            <div class="dscr-tooltip-row yellow">
+              <span class="dscr-tier-label">🟡 1.15 – 1.24</span>
+              <span class="dscr-price-range"></span>
+            </div>
+            <div class="dscr-tooltip-row orange">
+              <span class="dscr-tier-label">🟠 1.05 – 1.14</span>
+              <span class="dscr-price-range"></span>
+            </div>
+            <div class="dscr-tooltip-row red">
+              <span class="dscr-tier-label">🔴 1.00 – 1.04</span>
+              <span class="dscr-price-range"></span>
+            </div>
+            <div class="dscr-tooltip-row darkred">
+              <span class="dscr-tier-label">❌ &lt; 1.00</span>
+              <span class="dscr-price-range"></span>
+            </div>
             <div class="dscr-tooltip-current" id="dscrTooltipCurrent"></div>
           </div>
         </div>
@@ -2337,13 +2353,21 @@
     function setVal(id, val) { document.getElementById(id).textContent = val; }
     function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
     function fmtPct(n) { return n.toFixed(2) + '%'; }
+    function fmtCompact(n) {
+      if (!n || n <= 0) return '---';
+      if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+      return '$' + Math.round(n / 1e3) + 'k';
+    }
 
     // DSCR Indicator Update
-    function updateDscrIndicator(dscrRatio) {
+    function updateDscrIndicator(dscrRatio, calcParams) {
       const indicator = document.getElementById('dscrIndicator');
       const status = document.getElementById('dscrStatus');
       const currentEl = document.getElementById('dscrTooltipCurrent');
       const metricEl = document.getElementById('dscrMetric');
+
+      // Round to 2 decimals so tier logic matches displayed value
+      dscrRatio = Math.round(dscrRatio * 100) / 100;
 
       // Clear previous active row
       document.querySelectorAll('.dscr-tooltip-row').forEach(row => row.classList.remove('active'));
@@ -2394,6 +2418,38 @@
 
       // Update current status in tooltip
       currentEl.innerHTML = `<strong>Your DSCR: ${dscrRatio.toFixed(2)}</strong> — ${details}`;
+
+      // Update price ranges in tooltip
+      const priceEls = document.querySelectorAll('.dscr-price-range');
+      if (!calcParams || !priceEls.length) return;
+
+      const { noi, interestRate, loanTerm, mode, ltvPct, downPct } = calcParams;
+      const thresholds = [1.25, 1.15, 1.05, 1.00];
+
+      // Edge cases: can't compute meaningful prices
+      const divisor = mode === 'dscr' ? (ltvPct / 100) : (1 - downPct / 100);
+      if (noi <= 0 || interestRate === 0 || divisor <= 0) {
+        priceEls.forEach(el => el.textContent = '---');
+        return;
+      }
+
+      const prices = thresholds.map(d => {
+        const maxAds = noi / d;
+        const maxPayment = maxAds / 12;
+        const maxLoan = calculateMaxLoan(maxPayment, interestRate, loanTerm);
+        return maxLoan / divisor;
+      });
+
+      // Green: ≤ price@1.25
+      priceEls[0].textContent = '≤ ' + fmtCompact(prices[0]);
+      // Yellow: price@1.25 – price@1.15
+      priceEls[1].textContent = fmtCompact(prices[0]) + ' – ' + fmtCompact(prices[1]);
+      // Orange: price@1.15 – price@1.05
+      priceEls[2].textContent = fmtCompact(prices[1]) + ' – ' + fmtCompact(prices[2]);
+      // Red: price@1.05 – price@1.00
+      priceEls[3].textContent = fmtCompact(prices[2]) + ' – ' + fmtCompact(prices[3]);
+      // Darkred: > price@1.00
+      priceEls[4].textContent = '> ' + fmtCompact(prices[3]);
     }
 
     // Utility Breakdown Toggle
@@ -2598,6 +2654,13 @@
       return principal * (monthlyRate * Math.pow(1 + monthlyRate, n)) / (Math.pow(1 + monthlyRate, n) - 1);
     }
 
+    function calculateMaxLoan(maxMonthlyPayment, annualRate, years) {
+      const monthlyRate = annualRate / 100 / 12;
+      const n = years * 12;
+      if (monthlyRate === 0) return maxMonthlyPayment * n;
+      return maxMonthlyPayment * (Math.pow(1 + monthlyRate, n) - 1) / (monthlyRate * Math.pow(1 + monthlyRate, n));
+    }
+
     function getLoanBalance(principal, annualRate, years, monthsPaid) {
       const monthlyRate = annualRate / 100 / 12;
       const n = years * 12;
@@ -2735,7 +2798,14 @@
       // DSCR ratio
       const dscrRatio = annualDebtService > 0 ? noi / annualDebtService : 0;
       setVal('dscr', dscrRatio.toFixed(2));
-      updateDscrIndicator(dscrRatio);
+      updateDscrIndicator(dscrRatio, {
+        noi,
+        interestRate,
+        loanTerm,
+        mode: currentMode,
+        ltvPct: currentMode === 'dscr' ? getVal('dscrLtv') : 0,
+        downPct: currentMode !== 'dscr' ? getVal('downPercent') : 0,
+      });
 
       // Cap Rate
       const capRate = purchasePrice > 0 ? (noi / purchasePrice) * 100 : 0;
