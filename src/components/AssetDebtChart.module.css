@@ -1,0 +1,6 @@
+.chartContainer { position: relative; height: 180px; }
+.legendDot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: middle; }
+
+@media print {
+  .chartContainer { height: 100px; }
+}

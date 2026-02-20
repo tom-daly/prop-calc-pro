@@ -1,0 +1,35 @@
+.header { background: var(--card); border-bottom: 1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.leftGroup { display: flex; align-items: center; gap: 16px; }
+.logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
+.logoIcon { width: 28px; height: 28px; background: var(--highlight); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; }
+.vaultSelect { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); cursor: pointer; font-size: 13px; }
+.headerActions { display: flex; gap: 8px; }
+.btn { padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 5px; transition: all 0.15s; }
+.btnSave { background: var(--primary); color: #fff; }
+.btnSave:hover { background: var(--primary-dark); }
+.btnPdf { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+.btnPdf:hover { background: var(--bg); }
+.btnNew { background: var(--accent); color: #fff; }
+.btnNew:hover { background: var(--accent-dark); }
+.btnDelete { background: #ef4444; color: #fff; }
+.btnDelete:hover { background: #dc2626; }
+.btnDuplicate { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+.btnDuplicate:hover { background: var(--bg); }
+.btnAi { background: #8b5cf6; color: #fff; }
+.btnAi:hover { background: #7c3aed; }
+
+.propertyInfo { display: flex; flex-direction: column; gap: 2px; }
+.propertyInfo input { border: none; background: transparent; padding: 4px 8px; border-radius: 4px; }
+.propertyInfo input:hover { background: var(--bg); }
+.propertyInfo input:focus { background: var(--card); outline: 2px solid var(--primary); }
+.propName { font-size: 14px; font-weight: 600; width: 300px; }
+.propAddress { font-size: 12px; color: var(--text-muted); width: 300px; }
+
+.vaultOverlay { display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; }
+.vaultContent { background: #fff; border-radius: 12px; padding: 20px; width: 400px; max-height: 80vh; overflow: auto; }
+.vaultHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.vaultHeader h3 { font-size: 16px; }
+.vaultClose { border: none; background: none; font-size: 20px; cursor: pointer; }
+.vaultItem { padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; transition: background 0.15s; }
+.vaultItem:hover { background: var(--bg); }
+.vaultDeleteBtn { border: none; background: none; color: #ef4444; cursor: pointer; padding: 8px; font-size: 16px; }

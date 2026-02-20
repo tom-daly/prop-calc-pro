@@ -65,11 +65,24 @@ Built-in AI chat (requires OpenAI API key) to discuss your deal, ask questions, 
 
 ## Getting Started
 
-1. Download `index.html`
+### Quick Start (No Build Required)
+
+1. Download `dist/index.html` from the [latest release](https://github.com/tom-daly/prop-calc-pro/releases)
 2. Open in any modern browser
 3. Start analyzing deals
 
-No installation, no server, no dependencies. Everything runs locally in your browser.
+The release file is a single self-contained HTML file — no installation, no server, no dependencies. Everything runs locally in your browser.
+
+### Development
+
+If you want to modify the source code:
+
+```bash
+npm install
+npm run dev      # Start dev server at localhost:5173
+npm run build    # Build single-file dist/index.html
+npm test         # Run unit tests
+```
 
 ## Usage
 

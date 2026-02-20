@@ -1,0 +1,92 @@
+:root {
+  --bg: #f8fafc; --card: #fff; --border: #e2e8f0;
+  --text: #1e293b; --text-muted: #64748b; --text-light: #94a3b8;
+  --primary: #10b981; --primary-dark: #059669;
+  --accent: #3b82f6; --accent-dark: #1e40af;
+  --highlight: #0f172a; --highlight-text: #10b981;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.4;
+}
+
+@media print {
+  body { background: #fff; font-size: 9px; line-height: 1.2; }
+  @page { size: A4; margin: 6mm; }
+
+  /* Hide header toolbar, mode tabs, footer, modals */
+  [data-print="hide"] { display: none !important; }
+
+  /* Show metrics overview at top in print */
+  [data-print="top-metrics"] { display: block !important; margin-bottom: 6px; }
+
+  /* Print header with property info */
+  [data-print="header"] {
+    display: block !important;
+    text-align: center;
+    padding: 2px 0 6px;
+    border-bottom: 2px solid #1e293b;
+    margin-bottom: 6px;
+  }
+  [data-print="header"] .print-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+  [data-print="header"] .print-address {
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 1px;
+  }
+  [data-print="header"] .print-branding {
+    font-size: 8px;
+    color: #94a3b8;
+    margin-top: 1px;
+  }
+
+  /* Newspaper-style 2-column flow for print */
+  [data-print-layout="main"] {
+    display: block !important;
+    columns: 2 !important;
+    column-gap: 6px !important;
+    padding: 0 !important;
+  }
+  [data-print-layout="main"] > div {
+    display: block !important;
+    break-inside: auto;
+  }
+
+  /* Cards — compact, don't break mid-card */
+  [data-section] { break-inside: avoid; margin-bottom: 4px; border: 1px solid #ddd; padding: 6px !important; border-radius: 4px !important; overflow: hidden; }
+  [data-section] > div:first-child { margin-bottom: 4px !important; }
+
+  /* Full-width sections span both columns */
+  [data-section="metrics"],
+  [data-section="milestones"],
+  [data-section="asset-debt"],
+  [data-section="stress-test"],
+  [data-section="balloon"],
+  [data-section="amortization"] { column-span: all; }
+
+  /* Shrink chart height */
+  [data-section="asset-debt"] > div:last-child { height: 100px !important; }
+
+  /* Compact inputs in print */
+  input { padding: 2px 4px !important; font-size: 9px !important; }
+  label { font-size: 8px !important; }
+
+  /* Section hiding via body attribute */
+  body[data-pdf-hide*="acquisition"] [data-section="acquisition"] { display: none !important; }
+  body[data-pdf-hide*="revenue"] [data-section="revenue"] { display: none !important; }
+  body[data-pdf-hide*="expenses"] [data-section="expenses"] { display: none !important; }
+  body[data-pdf-hide*="growth"] [data-section="growth"] { display: none !important; }
+  body[data-pdf-hide*="metrics"] [data-section="metrics"] { display: none !important; }
+  body[data-pdf-hide*="milestones"] [data-section="milestones"] { display: none !important; }
+  body[data-pdf-hide*="asset-debt"] [data-section="asset-debt"] { display: none !important; }
+  body[data-pdf-hide*="stress-test"] [data-section="stress-test"] { display: none !important; }
+  body[data-pdf-hide*="balloon"] [data-section="balloon"] { display: none !important; }
+  body[data-pdf-hide*="amortization"] [data-section="amortization"] { display: none !important; }
+}

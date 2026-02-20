@@ -1,0 +1,31 @@
+.expensesTable { width: 100%; border-collapse: collapse; }
+.expensesTable th { font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 500; padding: 6px 4px; text-align: left; border-bottom: 1px solid var(--border); }
+.expensesTable td { padding: 8px 4px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.expenseName { font-weight: 500; }
+.expenseInputWrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--card); width: 100px; }
+.expenseInputWrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(16,185,129,0.1); }
+.prefix { padding: 6px 8px; background: var(--bg); color: var(--text-muted); font-size: 12px; border-right: 1px solid var(--border); }
+.expenseInputWrap input { border: none; padding: 6px 8px; width: 100%; font-size: 13px; outline: none; }
+.expenseYearly { text-align: right; font-weight: 600; color: var(--text); }
+.toggleGroup { display: inline-flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.toggleBtn { padding: 3px 8px; font-size: 10px; border: none; background: var(--card); cursor: pointer; color: var(--text-muted); }
+.toggleBtn.active { background: var(--highlight); color: #fff; }
+.expenseTotal { background: var(--highlight); color: #fff; border-radius: 8px; padding: 10px 14px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+.etLabel { font-size: 10px; text-transform: uppercase; }
+.etValue { font-size: 18px; font-weight: 700; color: var(--primary); }
+.expandToggle { cursor: pointer; display: inline-block; width: 16px; font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
+.open { transform: rotate(90deg); }
+.utilityDetail td { padding-top: 4px !important; padding-bottom: 4px !important; background: var(--bg); font-size: 11px; }
+.utilityDetail .expenseInputWrap { background: #fff; }
+
+@media print {
+  .expensesTable td { padding: 2px 3px; font-size: 9px; }
+  .expensesTable th { padding: 2px 3px; font-size: 8px; }
+  .toggleGroup { display: none; }
+  .expandToggle { display: none; }
+  .expenseInputWrap { width: 70px; }
+  .prefix { padding: 2px 4px; font-size: 9px; }
+  .expenseTotal { padding: 4px 8px; margin-top: 4px; }
+  .etLabel { font-size: 8px; }
+  .etValue { font-size: 12px; }
+}

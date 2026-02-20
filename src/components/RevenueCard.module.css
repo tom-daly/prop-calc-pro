@@ -1,0 +1,35 @@
+.unitsGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.unitBox { background: var(--bg); border-radius: 6px; padding: 10px; }
+.unitHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.unitTitle { font-size: 10px; text-transform: uppercase; color: var(--text-muted); }
+.removeBtn { background: none; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1; border-radius: 4px; }
+.removeBtn:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
+.bedBathRow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.bedBathRow .inputWrap input { text-align: center; }
+.addUnitBtn { background: var(--bg); border: 2px dashed var(--border); border-radius: 6px; padding: 10px; cursor: pointer; color: var(--text-muted); font-size: 13px; font-weight: 500; transition: all 0.15s; min-height: 80px; display: flex; align-items: center; justify-content: center; }
+.addUnitBtn:hover { border-color: var(--primary); color: var(--primary); background: rgba(16,185,129,0.05); }
+@media print {
+  .addUnitBtn { display: none !important; }
+  .removeBtn { display: none !important; }
+  .unitsGrid { gap: 3px; margin-bottom: 4px; }
+  .unitBox { padding: 4px; }
+  .unitHeader { margin-bottom: 2px; }
+  .unitTitle { font-size: 8px; }
+  .inputGroup { margin-bottom: 2px; gap: 1px; }
+  .prefix { padding: 2px 4px; font-size: 9px; }
+  .bottomRow { gap: 4px; margin-top: 4px; }
+  .revenueBox { padding: 4px 6px; border-radius: 4px; }
+  .rvLabel { font-size: 8px; }
+  .rvValue { font-size: 14px; }
+}
+.inputGroup { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
+.inputGroup:last-child { margin-bottom: 0; }
+.inputGroup label { font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.3px; }
+.inputWrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--card); }
+.inputWrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(16,185,129,0.1); }
+.prefix { padding: 6px 8px; background: var(--bg); color: var(--text-muted); font-size: 12px; border-right: 1px solid var(--border); }
+.inputWrap input { border: none; padding: 6px 8px; width: 100%; font-size: 13px; outline: none; }
+.bottomRow { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 10px; }
+.revenueBox { background: var(--highlight); color: var(--highlight-text); border-radius: 8px; padding: 10px; }
+.rvLabel { font-size: 10px; text-transform: uppercase; color: var(--text-light); }
+.rvValue { font-size: 22px; font-weight: 700; }

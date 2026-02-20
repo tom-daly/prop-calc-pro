@@ -1,0 +1,12 @@
+.stressContainer { overflow-x: auto; }
+.stressTable { width: 100%; border-collapse: collapse; font-size: 11px; }
+.stressTable th { text-align: left; padding: 8px 6px; border-bottom: 2px solid var(--border); font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+.stressTable td { padding: 8px 6px; border-bottom: 1px solid var(--border); }
+.stressTable tr:last-child td { border-bottom: none; }
+.baseCase { background: var(--bg); font-weight: 600; }
+.scenarioName { font-weight: 500; }
+.status-pass { color: #10b981; font-weight: 600; }
+.status-warn { color: #f59e0b; font-weight: 600; }
+.status-fail { color: #ef4444; font-weight: 600; }
+.valueNegative { color: #ef4444; }
+.valuePositive { color: #10b981; }

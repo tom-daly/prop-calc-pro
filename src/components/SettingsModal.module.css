@@ -1,0 +1,11 @@
+.overlay { display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+.content { background: #fff; border-radius: 12px; padding: 20px; width: 450px; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.header h3 { font-size: 16px; }
+.close { border: none; background: none; font-size: 20px; cursor: pointer; }
+.label { font-size: 12px; font-weight: 600; display: block; margin-bottom: 6px; }
+.settingsInput { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
+.settingsInput:focus { outline: none; border-color: var(--primary); }
+.note { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+.footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+.btnSave { padding: 6px 14px; border-radius: 6px; border: none; background: var(--primary); color: #fff; cursor: pointer; font-size: 12px; font-weight: 500; }

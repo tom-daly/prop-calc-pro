@@ -1,0 +1,21 @@
+.overlay { display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+.content { background: #fff; border-radius: 12px; padding: 20px; width: 420px; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.header h3 { font-size: 16px; }
+.close { border: none; background: none; font-size: 20px; cursor: pointer; }
+.subtitle { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+.quickActions { display: flex; gap: 8px; margin-bottom: 12px; }
+.quickBtn { font-size: 11px; padding: 4px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--card); cursor: pointer; color: var(--text-muted); }
+.quickBtn:hover { background: var(--bg); }
+.list { display: flex; flex-direction: column; gap: 2px; max-height: 320px; overflow-y: auto; }
+.item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; cursor: pointer; transition: background 0.1s; }
+.item:hover { background: var(--bg); }
+.checkbox { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+.icon { font-size: 14px; }
+.label { font-size: 13px; font-weight: 500; }
+.footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
+.btnCancel { padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); cursor: pointer; font-size: 12px; font-weight: 500; }
+.btnCancel:hover { background: var(--bg); }
+.btnExport { padding: 8px 16px; border-radius: 6px; border: none; background: var(--primary); color: #fff; cursor: pointer; font-size: 12px; font-weight: 500; }
+.btnExport:hover { background: var(--primary-dark); }
+.btnExport:disabled { opacity: 0.4; cursor: not-allowed; }

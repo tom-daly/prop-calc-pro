@@ -1,0 +1,7 @@
+.offerAmortTable { width: 100%; border-collapse: collapse; font-size: 11px; }
+.offerAmortTable th { text-align: right; padding: 6px 8px; border-bottom: 2px solid var(--border); font-size: 9px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+.offerAmortTable th:first-child { text-align: left; }
+.offerAmortTable td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: right; font-variant-numeric: tabular-nums; }
+.offerAmortTable td:first-child { text-align: left; font-weight: 500; }
+.offerAmortTable tr:last-child td { border-bottom: none; }
+.balloonRow { background: rgba(16,185,129,0.08); font-weight: 600; }

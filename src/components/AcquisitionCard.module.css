@@ -1,0 +1,71 @@
+.inputGroup { display: flex; flex-direction: column; gap: 3px; }
+.inputGroup label { font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.3px; }
+.inputWrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--card); }
+.inputWrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(16,185,129,0.1); }
+.prefix { padding: 6px 8px; background: var(--bg); color: var(--text-muted); font-size: 12px; border-right: 1px solid var(--border); }
+.inputWrap input { border: none; padding: 6px 8px; width: 100%; font-size: 13px; outline: none; }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+.highlightBox { background: var(--highlight); color: #fff; border-radius: 8px; padding: 12px; margin: 10px 0; }
+.hlLabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #ef4444; margin-bottom: 4px; }
+.hlLabelGreen { color: var(--primary); }
+.hlValue { font-size: 26px; font-weight: 700; color: #fff; }
+.hlBreakdown { display: flex; gap: 12px; margin-top: 8px; font-size: 11px; }
+.hlBreakdown span { color: var(--text-light); }
+.hlBreakdown strong { color: #fff; margin-left: 4px; }
+.hlBreakdownRow { display: flex; gap: 12px; margin-top: 4px; font-size: 11px; flex-wrap: wrap; }
+.hlBreakdownRow span { color: var(--text-light); }
+.hlBreakdownRow strong { color: #fff; margin-left: 4px; }
+.hlLoanInfo { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 11px; color: var(--text-light); }
+
+.dscrRow { margin-bottom: 10px; }
+.carryBtn { padding: 4px 10px; font-size: 11px; border: 1px solid var(--border); background: var(--card); border-radius: 4px; cursor: pointer; color: var(--text-muted); }
+.carryBtn:hover { background: var(--bg); color: var(--text); }
+.trancheSummary { margin-left: 8px; font-size: 11px; color: var(--text-muted); }
+
+.jvRow { margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+.jvRow .inputGroup { flex: 0 0 auto; }
+.jvRow .inputWrap { width: 100px; }
+
+.sectionTitle { font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 8px; }
+
+.offerSummary { background: var(--highlight); color: #fff; border-radius: 8px; padding: 12px; margin-top: 10px; }
+.osTitle { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light); margin-bottom: 8px; }
+.osRow { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; }
+.osLabel { color: rgba(255,255,255,0.7); }
+.osValue { font-weight: 600; }
+.osTotal { border-top: 1px solid rgba(255,255,255,0.2); padding-top: 6px; margin-top: 6px; }
+.osTotal .osValue { color: var(--primary); font-size: 13px; }
+.negative { color: #ef4444 !important; }
+
+.pillToggle { display: flex; gap: 0; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.pill { flex: 1; padding: 6px 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; border: none; background: var(--card); color: var(--text-muted); cursor: pointer; transition: background 0.15s, color 0.15s; }
+.pill:not(:last-child) { border-right: 1px solid var(--border); }
+.pill:hover { background: var(--bg); color: var(--text); }
+.pillActive { background: var(--primary); color: #fff; }
+.pillActive:hover { background: var(--primary); color: #fff; }
+
+.checkRow { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.checkRow input[type="checkbox"] { accent-color: var(--primary); }
+.checkRow label { font-size: 11px; color: var(--text-muted); cursor: pointer; }
+
+@media print {
+  .row2, .row3 { gap: 4px; margin-bottom: 4px; }
+  .inputGroup { gap: 1px; }
+  .inputWrap input { padding: 2px 4px; font-size: 9px; }
+  .prefix { padding: 2px 4px; font-size: 9px; }
+  .highlightBox { padding: 6px; margin: 4px 0; }
+  .hlLabel { font-size: 8px; margin-bottom: 2px; }
+  .hlValue { font-size: 16px; }
+  .hlBreakdown, .hlBreakdownRow { margin-top: 3px; font-size: 9px; }
+  .hlLoanInfo { margin-top: 4px; padding-top: 4px; font-size: 9px; }
+  .offerSummary { padding: 6px; margin-top: 4px; }
+  .osRow { font-size: 9px; margin-bottom: 2px; }
+  .pillToggle { display: none; }
+  .jvRow { margin-bottom: 4px; }
+  .dscrRow { margin-bottom: 4px; }
+  .carryBtn { display: none; }
+  .sectionTitle { font-size: 8px; margin-bottom: 4px; }
+}
