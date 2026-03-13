@@ -4,6 +4,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import styles from './MetricsBar.module.css'
 import usePropertyStore from '../store/usePropertyStore'
 import { fmt, fmtPct, fmtCompact } from '../utils/format'
+import { BRRRR } from '../utils/modes'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -62,7 +63,7 @@ export default function MetricsBar() {
             <div className={styles.label}>Monthly Flow</div>
             <div className={styles.value}>
               {fmt(results.displayMonthlyCF)}
-              {mode === 'dscr' && results.jvSplit < 100 && (
+              {mode === BRRRR && results.jvSplit < 100 && (
                 <span className={styles.subInline}> of {fmt(results.monthlyCashFlow)}</span>
               )}
             </div>
@@ -72,7 +73,7 @@ export default function MetricsBar() {
             <div className={styles.label}>Cash-on-Cash</div>
             <div className={styles.value}>
               {fmtPct(results.cashOnCash)}
-              {mode === 'dscr' && results.jvSplit < 100 && (
+              {mode === BRRRR && results.jvSplit < 100 && (
                 <span className={styles.subInline}> of {fmtPct(results.fullCashOnCash)}</span>
               )}
             </div>

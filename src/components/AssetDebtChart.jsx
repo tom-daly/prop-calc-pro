@@ -7,6 +7,7 @@ import {
 import styles from './AssetDebtChart.module.css'
 import Card from './Card'
 import usePropertyStore from '../store/usePropertyStore'
+import { OFFER } from '../utils/modes'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, ChartTooltip)
 
@@ -14,12 +15,13 @@ export default function AssetDebtChart() {
   const mode = usePropertyStore(s => s.currentMode)
   const mainResults = usePropertyStore(s => s.results)
   const offerResults = usePropertyStore(s => s.offerResults)
-  const results = mode === 'offer' ? offerResults : mainResults
+  const results = mode === OFFER ? offerResults : mainResults
 
   if (!results) return null
 
-  const { chartAssets: assets, chartLoans: loans } = results
+  const { chartAssets: assets, chartLoans: loans, chartRent: rent, chartCashFlow: cashFlow } = results
   const labels = Array.from({ length: 31 }, (_, i) => i)
+  const milestonePoint = (y) => y === 5 || y === 10 ? 5 : 0
 
   const data = {
     labels,
@@ -31,12 +33,13 @@ export default function AssetDebtChart() {
         backgroundColor: 'rgba(59, 130, 246, 0.08)',
         fill: true,
         tension: 0.3,
-        pointRadius: labels.map(y => y === 5 || y === 10 ? 5 : 0),
+        pointRadius: labels.map(milestonePoint),
         pointHoverRadius: 6,
         pointBackgroundColor: '#3b82f6',
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
         borderWidth: 2,
+        yAxisID: 'y',
       },
       {
         label: 'Loan Balance',
@@ -45,12 +48,41 @@ export default function AssetDebtChart() {
         backgroundColor: 'transparent',
         fill: false,
         tension: 0.3,
-        pointRadius: labels.map(y => y === 5 || y === 10 ? 5 : 0),
+        pointRadius: labels.map(milestonePoint),
         pointHoverRadius: 6,
         pointBackgroundColor: '#ef4444',
         pointBorderColor: '#fff',
         pointBorderWidth: 2,
         borderWidth: 2,
+        yAxisID: 'y',
+      },
+      {
+        label: 'Annual Rent',
+        data: rent,
+        borderColor: '#10b981',
+        backgroundColor: 'transparent',
+        fill: false,
+        tension: 0.3,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointBackgroundColor: '#10b981',
+        borderWidth: 2,
+        borderDash: [6, 3],
+        yAxisID: 'y2',
+      },
+      {
+        label: 'Annual Cash Flow',
+        data: cashFlow,
+        borderColor: '#f59e0b',
+        backgroundColor: 'transparent',
+        fill: false,
+        tension: 0.3,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointBackgroundColor: '#f59e0b',
+        borderWidth: 2,
+        borderDash: [6, 3],
+        yAxisID: 'y2',
       },
     ],
   }
@@ -92,7 +124,17 @@ export default function AssetDebtChart() {
         },
       },
       y: {
+        position: 'left',
         grid: { color: '#e2e8f0' },
+        ticks: {
+          font: { size: 10 },
+          color: '#64748b',
+          callback: (val) => '$' + Math.round(val / 1000) + 'k',
+        },
+      },
+      y2: {
+        position: 'right',
+        grid: { display: false },
         ticks: {
           font: { size: 10 },
           color: '#64748b',
@@ -128,7 +170,12 @@ export default function AssetDebtChart() {
 
   return (
     <Card icon="📊" title="Asset/Debt Forecaster" section="asset-debt"
-      badge={<><span className={styles.legendDot} style={{ background: 'var(--accent)' }} /> ASSET <span className={styles.legendDot} style={{ background: '#ef4444', marginLeft: 12 }} /> LOAN</>}>
+      badge={<>
+        <span className={styles.legendDot} style={{ background: '#3b82f6' }} /> ASSET
+        <span className={styles.legendDot} style={{ background: '#ef4444', marginLeft: 12 }} /> LOAN
+        <span className={styles.legendDot} style={{ background: '#10b981', marginLeft: 12 }} /> RENT
+        <span className={styles.legendDot} style={{ background: '#f59e0b', marginLeft: 12 }} /> CF
+      </>}>
       <div className={styles.chartContainer}>
         <Line data={data} options={options} plugins={[milestonePlugin]} />
       </div>

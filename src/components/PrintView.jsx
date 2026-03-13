@@ -1,6 +1,7 @@
 import React from 'react'
 import usePropertyStore from '../store/usePropertyStore'
 import { fmt, fmtPct } from '../utils/format'
+import { TRADITIONAL, BRRRR, OFFER, MODE_LABELS } from '../utils/modes'
 
 const EXPENSE_NAMES = {
   propTaxes: 'Property Taxes', insurance: 'Insurance', maintenance: 'Maintenance',
@@ -20,9 +21,10 @@ export default function PrintView({ sections, onClose }) {
   const inputs = usePropertyStore(s => s.inputs)
   const results = usePropertyStore(s => s.results)
   const offerResults = usePropertyStore(s => s.offerResults)
+  const maoResults = usePropertyStore(s => s.maoResults)
   const expenseConfig = usePropertyStore(s => s.expenseConfig)
   const mode = usePropertyStore(s => s.currentMode)
-  const r = mode === 'offer' ? offerResults : results
+  const r = mode === OFFER ? offerResults : results
 
   if (!r) return null
 
@@ -30,7 +32,7 @@ export default function PrintView({ sections, onClose }) {
   const income = r.annualEffectiveRent || 0
   const pct = (v) => income > 0 ? ((v / income) * 100).toFixed(0) + '%' : ''
 
-  const modeLabel = mode === 'dscr' ? 'Cash-Carry-Refi-DSCR' : mode === 'offer' ? 'Offer Analysis' : 'Traditional'
+  const modeLabel = MODE_LABELS[mode] || mode
 
   return (
     <div style={styles.overlay}>
@@ -39,7 +41,7 @@ export default function PrintView({ sections, onClose }) {
         <div style={styles.header}>
           <div style={styles.title}>{inputs.propertyName || 'Untitled Property'}</div>
           {inputs.propertyAddress && <div style={styles.address}>{inputs.propertyAddress}</div>}
-          <div style={styles.branding}>PropCalc Pro &middot; {modeLabel} Analysis</div>
+          <div style={styles.branding}>Prop Calc Pro &middot; {modeLabel} Analysis</div>
         </div>
 
         {/* P&L Overview — always first */}
@@ -51,7 +53,7 @@ export default function PrintView({ sections, onClose }) {
                   <td style={styles.plLabel}>Gross Income</td>
                   <td style={styles.plVal}>{fmt(income)}</td>
                   <td style={styles.plLabel}>DSCR</td>
-                  <td style={styles.plValBold}>{(mode === 'offer' ? (r.noi / (r.totalMonthlyDebt * 12 || 1)) : r.dscrRatio).toFixed(2)}</td>
+                  <td style={styles.plValBold}>{(mode === OFFER ? (r.noi / (r.totalMonthlyDebt * 12 || 1)) : r.dscrRatio).toFixed(2)}</td>
                   <td style={styles.plLabel}>Cap Rate</td>
                   <td style={styles.plVal}>{fmtPct(r.capRate)}</td>
                 </tr>
@@ -59,11 +61,11 @@ export default function PrintView({ sections, onClose }) {
                   <td style={styles.plLabel}>Expenses <span style={styles.pct}>{pct(results?.totalExpenses || r.totalExpenses || 0)}</span></td>
                   <td style={{ ...styles.plVal, color: '#ef4444' }}>({fmt(results?.totalExpenses || 0)})</td>
                   <td style={styles.plLabel}>Monthly Flow</td>
-                  <td style={{ ...styles.plValBold, color: (mode === 'offer' ? r.monthlyCF : results?.displayMonthlyCF) >= 0 ? '#10b981' : '#ef4444' }}>
-                    {fmt(mode === 'offer' ? r.monthlyCF : results?.displayMonthlyCF || 0)}
+                  <td style={{ ...styles.plValBold, color: (mode === OFFER ? r.monthlyCF : results?.displayMonthlyCF) >= 0 ? '#10b981' : '#ef4444' }}>
+                    {fmt(mode === OFFER ? r.monthlyCF : results?.displayMonthlyCF || 0)}
                   </td>
                   <td style={styles.plLabel}>Cash-on-Cash</td>
-                  <td style={styles.plVal}>{mode !== 'offer' ? fmtPct(results?.cashOnCash || 0) : '—'}</td>
+                  <td style={styles.plVal}>{mode !== OFFER ? fmtPct(results?.cashOnCash || 0) : '—'}</td>
                 </tr>
                 <tr style={{ borderTop: '1px solid #e2e8f0' }}>
                   <td style={{ ...styles.plLabel, fontWeight: 600 }}>NOI</td>
@@ -86,16 +88,23 @@ export default function PrintView({ sections, onClose }) {
             {show('acquisition') && (
               <div style={styles.section}>
                 <div style={styles.secTitle}>Acquisition Details</div>
-                <Row label="Purchase Price" value={fmt(parseFloat(inputs.purchasePrice) || 0)} />
+                {parseFloat(inputs.listPrice) > 0 && (
+                  <Row label="List Price" value={fmt(parseFloat(inputs.listPrice) || 0)} />
+                )}
+                <Row label="Purchase / Offer" value={fmt(parseFloat(inputs.purchasePrice) || 0)} />
+                {parseFloat(inputs.listPrice) > 0 && parseFloat(inputs.purchasePrice) > 0 && (() => {
+                  const disc = ((parseFloat(inputs.listPrice) - parseFloat(inputs.purchasePrice)) / parseFloat(inputs.listPrice) * 100)
+                  return disc !== 0 ? <Row label={disc > 0 ? 'Discount from List' : 'Premium over List'} value={Math.abs(disc).toFixed(1) + '%'} /> : null
+                })()}
                 <Row label="Exit ARV" value={fmt(parseFloat(inputs.exitArv) || 0)} />
-                {mode === 'traditional' && <>
+                {mode === TRADITIONAL && <>
                   <Row label="Down Payment" value={fmt(results?.downAmount || 0)} />
                   <Row label="Closing Costs" value={fmt(results?.feesAmount || 0)} />
                   <Row label="Rehab" value={fmt(results?.rehabAmount || 0)} />
                   <Row label="Total Out of Pocket" value={fmt((results?.downAmount || 0) + (results?.feesAmount || 0) + (results?.rehabAmount || 0))} bold />
                 </>}
-                {mode === 'dscr' && <>
-                  <Row label="DSCR LTV" value={(inputs.dscrLtv || '75') + '%'} />
+                {mode === BRRRR && <>
+                  <Row label="Refi LTV" value={(inputs.dscrLtv || '75') + '%'} />
                   <Row label="Loan Amount" value={fmt(results?.dscrLoanAmount || 0)} />
                   <Row label={results?.dscrHighlightLabel || 'Cash Left'} value={fmt(Math.abs(results?.dscrCashLeft || 0))} bold />
                 </>}
@@ -170,15 +179,25 @@ export default function PrintView({ sections, onClose }) {
                   <th style={styles.msHead}></th>
                   <th style={styles.msHead}>Equity</th>
                   <th style={styles.msHead}>Debt</th>
+                  <th style={styles.msHead}>Monthly CF</th>
                   <th style={styles.msHead}>Total Flow</th>
                   <th style={styles.msHead}>Net Gain</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
+                  <td style={styles.msLabel}>Year 1</td>
+                  <td style={styles.msVal}>{fmt(r.equity1)}</td>
+                  <td style={{ ...styles.msVal, color: '#ef4444' }}>{fmt(r.balance1)}</td>
+                  <td style={{ ...styles.msVal, color: (r.monthlyCF1 || 0) >= 0 ? '#10b981' : '#ef4444' }}>{fmt(r.monthlyCF1 || 0)}</td>
+                  <td style={{ ...styles.msVal, color: '#10b981' }}>{fmt(r.flow1)}</td>
+                  <td style={{ ...styles.msVal, fontWeight: 700 }}>{fmt(r.netGain1)}</td>
+                </tr>
+                <tr>
                   <td style={styles.msLabel}>Year 5</td>
                   <td style={styles.msVal}>{fmt(r.equity5)}</td>
                   <td style={{ ...styles.msVal, color: '#ef4444' }}>{fmt(r.balance5)}</td>
+                  <td style={{ ...styles.msVal, color: (r.monthlyCF5 || 0) >= 0 ? '#10b981' : '#ef4444' }}>{fmt(r.monthlyCF5 || 0)}</td>
                   <td style={{ ...styles.msVal, color: '#10b981' }}>{fmt(r.flow5)}</td>
                   <td style={{ ...styles.msVal, fontWeight: 700 }}>{fmt(r.netGain5)}</td>
                 </tr>
@@ -186,11 +205,53 @@ export default function PrintView({ sections, onClose }) {
                   <td style={styles.msLabel}>Year 10</td>
                   <td style={styles.msVal}>{fmt(r.equity10)}</td>
                   <td style={{ ...styles.msVal, color: '#ef4444' }}>{fmt(r.balance10)}</td>
+                  <td style={{ ...styles.msVal, color: (r.monthlyCF10 || 0) >= 0 ? '#10b981' : '#ef4444' }}>{fmt(r.monthlyCF10 || 0)}</td>
                   <td style={{ ...styles.msVal, color: '#10b981' }}>{fmt(r.flow10)}</td>
                   <td style={{ ...styles.msVal, fontWeight: 700 }}>{fmt(r.netGain10)}</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* MAO */}
+        {show('mao') && maoResults && mode !== OFFER && (
+          <div style={styles.section}>
+            <div style={styles.secTitle}>Max Allowable Offer (MAO)</div>
+            {parseFloat(inputs.maoTargetCF) > 0 && (
+              <Row label="Target Monthly Cash Flow" value={fmt(parseFloat(inputs.maoTargetCF))} />
+            )}
+            {mode === TRADITIONAL && maoResults.maxPriceCF > 0 && (
+              <>
+                <Row label="Max Offer Price" value={fmt(maoResults.maxPriceCF)} bold />
+                <Row label="NOI" value={fmt(maoResults.noi)} />
+                <Row label="Max Annual Debt" value={fmt(maoResults.maxAnnualDebt)} />
+              </>
+            )}
+            {mode === BRRRR && (
+              <>
+                <Row label="Projected Monthly CF" value={fmt(maoResults.monthlyCF)} bold />
+                <Row label="Cash-Out MAO" value={maoResults.cashOutMaxPrice > 0 ? fmt(maoResults.cashOutMaxPrice) + (maoResults.cashOutArvPct > 0 ? ` (${maoResults.cashOutArvPct}% of ARV)` : '') : '—'} bold />
+                <Row label="65% Rule MAO" value={maoResults.rule65MaxPrice > 0 ? fmt(maoResults.rule65MaxPrice) : '—'} />
+                <Row label="70% Rule MAO" value={maoResults.rule70MaxPrice > 0 ? fmt(maoResults.rule70MaxPrice) : '—'} />
+                {maoResults.cocMaoRows && maoResults.cocMaoRows.length > 0 && (
+                  <>
+                    {maoResults.cocMaoRows.map(row => (
+                      <Row key={row.cocPct} label={`Max Price @ ${row.cocPct}% CoC`} value={fmt(row.maxPrice)} />
+                    ))}
+                  </>
+                )}
+                {maoResults.cfGap && (
+                  <>
+                    <Row label="CF Gap — Rent increase needed" value={fmt(Math.ceil(maoResults.cfGap.rentIncrease)) + '/mo'} />
+                    <Row label="CF Gap — Expense cut needed" value={fmt(Math.ceil(maoResults.cfGap.expenseReduction)) + '/mo'} />
+                    {maoResults.cfGap.targetLtv > 0 && (
+                      <Row label="CF Gap — Max Refi LTV" value={maoResults.cfGap.targetLtv + '%'} />
+                    )}
+                  </>
+                )}
+              </>
+            )}
           </div>
         )}
 

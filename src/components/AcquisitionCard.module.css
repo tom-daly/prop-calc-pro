@@ -29,6 +29,13 @@
 .jvRow .inputGroup { flex: 0 0 auto; }
 .jvRow .inputWrap { width: 100px; }
 
+.unitToggle { padding: 4px 8px; font-size: 10px; font-weight: 600; border: none; border-left: 1px solid var(--border); background: var(--bg); color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+.unitToggle:hover { background: var(--primary); color: #fff; }
+
+.discountBadge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+.discountPos { background: rgba(16,185,129,0.1); color: var(--primary); }
+.discountNeg { background: rgba(239,68,68,0.1); color: #ef4444; }
+
 .sectionTitle { font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 8px; }
 
 .offerSummary { background: var(--highlight); color: #fff; border-radius: 8px; padding: 12px; margin-top: 10px; }

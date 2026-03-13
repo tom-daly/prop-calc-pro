@@ -65,17 +65,18 @@ function ExpenseRow({ field, name, hasFreq, pctLabel, yearly, onToggleExpand, ex
   const config = usePropertyStore(s => s.expenseConfig[field])
   const setInput = usePropertyStore(s => s.setInput)
   const setExpenseConfig = usePropertyStore(s => s.setExpenseConfig)
+  const needed = usePropertyStore(s => s.emptyRequired.includes(field))
 
   return (
     <tr>
-      <td className={styles.expenseName}>
+      <td className={`${styles.expenseName} ${needed ? 'input-needed-label' : ''}`}>
         {onToggleExpand && (
           <span className={`${styles.expandToggle} ${expanded ? styles.open : ''}`} onClick={onToggleExpand}>▶</span>
         )}
         {name}
       </td>
       <td>
-        <div className={styles.expenseInputWrap}>
+        <div className={`${styles.expenseInputWrap} ${needed ? 'input-needed' : ''}`}>
           <span className={styles.prefix}>{config.mode === 'pct' ? '%' : '$'}</span>
           <input type="number" value={value} placeholder="0" onChange={e => setInput(field, e.target.value)} />
         </div>

@@ -1,0 +1,62 @@
+.targetRow { margin-bottom: 10px; }
+
+.inputGroup { display: flex; flex-direction: column; gap: 3px; }
+.inputGroup label { font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.3px; }
+.inputWrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--card); }
+.inputWrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(16,185,129,0.1); }
+.inputWrap input { border: none; padding: 6px 8px; width: 100%; font-size: 13px; outline: none; }
+.prefix { padding: 6px 8px; background: var(--bg); color: var(--text-muted); font-size: 12px; border-right: 1px solid var(--border); }
+.suffix { padding: 6px 8px; background: var(--bg); color: var(--text-muted); font-size: 11px; border-left: 1px solid var(--border); white-space: nowrap; }
+
+.noResult { padding: 12px; text-align: center; font-size: 12px; color: var(--text-muted); font-style: italic; }
+
+.resultBox { background: var(--highlight); color: #fff; border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+.resultBoxAlt { background: linear-gradient(135deg, #1e3a5f, #1e293b); color: #fff; border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+
+.maoLabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary); margin-bottom: 4px; }
+.maoValue { font-size: 24px; font-weight: 700; color: #fff; }
+.maoValueRow { display: flex; align-items: baseline; gap: 10px; }
+.arvBadge { font-size: 12px; font-weight: 600; color: var(--primary); background: rgba(16,185,129,0.15); padding: 2px 8px; border-radius: 4px; }
+.maoSub { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+.maoDetail { display: flex; gap: 14px; margin-top: 6px; font-size: 11px; }
+.maoDetail span { color: rgba(255,255,255,0.6); }
+.maoDetail strong { color: #fff; margin-left: 3px; }
+
+.maoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.cfNote { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; padding: 8px 10px; background: var(--bg); border-radius: 6px; margin-bottom: 10px; }
+.cfNoteLabel { font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.3px; }
+.cfNoteValue { font-size: 16px; font-weight: 700; }
+.cfNoteSub { font-size: 10px; color: var(--text-muted); width: 100%; }
+.pos { color: var(--primary); }
+.neg { color: #ef4444; }
+
+.cfFeasibility { font-size: 12px; font-weight: 600; padding: 8px 10px; border-radius: 6px; margin-bottom: 8px; }
+.cfPass { background: rgba(16,185,129,0.1); color: var(--primary); }
+.cfFail { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+.bHeader { font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+
+.breakdownTable { margin-top: 8px; padding: 8px 10px; background: var(--bg); border-radius: 6px; }
+.bRow { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); padding: 2px 0; }
+.bTotal { border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px; font-weight: 600; color: var(--text); }
+
+.gapBox { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; }
+.gapTitle { font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; color: #f59e0b; font-weight: 600; margin-bottom: 6px; }
+.gapRow { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text); padding: 3px 0; }
+.gapRow strong { color: #f59e0b; }
+.gapIcon { font-size: 14px; flex-shrink: 0; }
+
+@media print {
+  .targetRow { margin-bottom: 4px; }
+  .inputWrap input { padding: 2px 4px; font-size: 9px; }
+  .prefix, .suffix { padding: 2px 4px; font-size: 9px; }
+  .resultBox, .resultBoxAlt { padding: 6px; margin-bottom: 4px; }
+  .maoLabel { font-size: 8px; }
+  .maoValue { font-size: 16px; }
+  .maoDetail { font-size: 9px; }
+  .maoGrid { gap: 4px; }
+  .cfNote { padding: 4px 6px; margin-bottom: 4px; }
+  .breakdownTable { padding: 4px 6px; margin-top: 4px; }
+  .bRow { font-size: 9px; }
+}

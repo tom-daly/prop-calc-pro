@@ -4,20 +4,58 @@ import Card from './Card'
 import usePropertyStore from '../store/usePropertyStore'
 import { fmt } from '../utils/format'
 import { MORBY, SELLER_FINANCE, SUBJECT_TO, STRATEGIES, STRATEGY_PILL_LABELS } from '../utils/offerStrategies'
+import { TRADITIONAL, BRRRR, OFFER } from '../utils/modes'
+
+function addCommas(v) {
+  if (v === '' || v === undefined || v === null) return ''
+  const str = String(v)
+  const [whole, dec] = str.split('.')
+  const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return dec !== undefined ? formatted + '.' + dec : formatted
+}
 
 function StoreInput({ id, label, prefix, suffix, step, placeholder }) {
   const value = usePropertyStore(s => s.inputs[id])
   const setInput = usePropertyStore(s => s.setInput)
+  const needed = usePropertyStore(s => s.emptyRequired.includes(id))
+  const isDollar = prefix === '$'
+  const [focused, setFocused] = React.useState(false)
+
+  const displayValue = isDollar && !focused ? addCommas(value) : value
+
   return (
     <div className={styles.inputGroup}>
-      <label>{label}</label>
-      <div className={styles.inputWrap}>
+      <label className={needed ? 'input-needed-label' : ''}>{label}</label>
+      <div className={`${styles.inputWrap} ${needed ? 'input-needed' : ''}`}>
         {prefix && <span className={styles.prefix}>{prefix}</span>}
-        <input type="number" value={value} step={step} placeholder={placeholder}
-          onChange={e => setInput(id, e.target.value)} />
+        <input type={isDollar ? 'text' : 'number'} inputMode={isDollar ? 'decimal' : undefined}
+          value={displayValue} step={step} placeholder={placeholder}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          onChange={e => {
+            const raw = isDollar ? e.target.value.replace(/,/g, '') : e.target.value
+            if (isDollar && raw !== '' && isNaN(Number(raw))) return
+            setInput(id, raw)
+          }} />
         {suffix && <span className={styles.prefix}>{suffix}</span>}
       </div>
     </div>
+  )
+}
+
+function DiscountBadge() {
+  const listPrice = usePropertyStore(s => s.inputs.listPrice)
+  const purchasePrice = usePropertyStore(s => s.inputs.purchasePrice)
+  const list = parseFloat(String(listPrice).replace(/,/g, '')) || 0
+  const purchase = parseFloat(String(purchasePrice).replace(/,/g, '')) || 0
+  if (list <= 0 || purchase <= 0) return null
+  const discount = ((list - purchase) / list) * 100
+  if (discount === 0) return null
+  const isDiscount = discount > 0
+  return (
+    <span className={`${styles.discountBadge} ${isDiscount ? styles.discountPos : styles.discountNeg}`}>
+      {isDiscount ? '↓' : '↑'} {Math.abs(discount).toFixed(1)}% {isDiscount ? 'below' : 'above'} list
+    </span>
   )
 }
 
@@ -27,12 +65,14 @@ export default function AcquisitionCard() {
 
   return (
     <Card icon="💰" title="Acquisition Details" badge="⚙️ SETUP" section="acquisition">
-      <div className={styles.row2}>
-        <StoreInput id="purchasePrice" label="Purchase Price" prefix="$" placeholder="0" />
+      <div className={styles.row3}>
+        <StoreInput id="listPrice" label="List Price" prefix="$" placeholder="Optional" />
+        <StoreInput id="purchasePrice" label="Purchase / Offer" prefix="$" placeholder="0" />
         <StoreInput id="exitArv" label="Exit ARV" prefix="$" placeholder="0" />
       </div>
+      <DiscountBadge />
 
-      {mode === 'traditional' && (
+      {mode === TRADITIONAL && (
         <div className={styles.row3}>
           <StoreInput id="downPercent" label="Down %" placeholder="25" />
           <StoreInput id="closingCost" label="Closing Cost" prefix="$" placeholder="0" />
@@ -40,24 +80,24 @@ export default function AcquisitionCard() {
         </div>
       )}
 
-      {mode === 'dscr' && (
+      {mode === BRRRR && (
         <div className={styles.row3}>
           <StoreInput id="closingCostDscr" label="Closing Cost" prefix="$" placeholder="0" />
           <StoreInput id="rehabCostDscr" label="Upfront Rehab" prefix="$" placeholder="0" />
-          <StoreInput id="dscrLtv" label="DSCR LTV %" placeholder="75" />
+          <StoreInput id="dscrLtv" label="Refi LTV %" placeholder="75" />
         </div>
       )}
 
-      {mode !== 'offer' && (
+      {mode !== OFFER && (
         <div className={styles.row2}>
-          <StoreInput id="interestRate" label="Interest Rate %" step="0.125" placeholder="7" />
+          <StoreInput id="interestRate" label="Interest Rate %" step="0.125" />
           <StoreInput id="loanTerm" label="Loan Term (Years)" />
         </div>
       )}
 
-      {mode === 'dscr' && <DscrExtraInputs />}
+      {mode === BRRRR && <DscrExtraInputs />}
 
-      {mode === 'traditional' && results && (
+      {mode === TRADITIONAL && results && (
         <div className={styles.highlightBox}>
           <div className={styles.hlLabel}>Total Out of Pocket</div>
           <div className={styles.hlValue}>{fmt(results.downAmount + results.feesAmount + results.rehabAmount)}</div>
@@ -69,7 +109,7 @@ export default function AcquisitionCard() {
         </div>
       )}
 
-      {mode === 'dscr' && results && (
+      {mode === BRRRR && results && (
         <div className={styles.highlightBox}>
           <div className={`${styles.hlLabel} ${results.dscrHighlightLabelClass === 'green' ? styles.hlLabelGreen : ''}`}>
             {results.dscrHighlightLabel}
@@ -87,7 +127,7 @@ export default function AcquisitionCard() {
         </div>
       )}
 
-      {mode === 'offer' && <OfferInputs />}
+      {mode === OFFER && <OfferInputs />}
     </Card>
   )
 }
@@ -96,8 +136,8 @@ function DscrExtraInputs() {
   return (
     <>
       <div className={styles.row2}>
-        <StoreInput id="carryMonths" label="Carry Period (Months)" placeholder="6" />
-        <StoreInput id="carryRate" label="Default Carry Rate %" step="0.5" placeholder="8" />
+        <StoreInput id="carryMonths" label="Carry Period (Months)" />
+        <StoreInput id="carryRate" label="Default Carry Rate %" step="0.5" />
       </div>
       <div className={styles.dscrRow}>
         <button className={styles.carryBtn} onClick={() => document.dispatchEvent(new CustomEvent('openCarryModal'))}>
@@ -185,25 +225,50 @@ function MorbyInputs({ results }) {
 }
 
 function SellerFinanceInputs({ results }) {
+  const sfDownPayment = usePropertyStore(s => s.inputs.sfDownPayment)
+  const sfDownIsPercent = usePropertyStore(s => s.inputs.sfDownIsPercent)
+  const setInput = usePropertyStore(s => s.setInput)
+  const [downFocused, setDownFocused] = React.useState(false)
+  const isDollar = !sfDownIsPercent
+  const downDisplay = isDollar && !downFocused ? addCommas(sfDownPayment) : sfDownPayment
   return (
     <>
       <div className={styles.sectionTitle}>Seller Finance Parameters</div>
       <div className={styles.row2}>
+        <div className={styles.inputGroup}>
+          <label>Down Payment</label>
+          <div className={styles.inputWrap}>
+            <span className={styles.prefix}>{sfDownIsPercent ? '%' : '$'}</span>
+            <input type={isDollar ? 'text' : 'number'} inputMode={isDollar ? 'decimal' : undefined}
+              value={downDisplay}
+              onFocus={() => setDownFocused(true)}
+              onBlur={() => setDownFocused(false)}
+              onChange={e => {
+                const raw = isDollar ? e.target.value.replace(/,/g, '') : e.target.value
+                if (isDollar && raw !== '' && isNaN(Number(raw))) return
+                setInput('sfDownPayment', raw)
+              }} />
+            <button type="button" className={styles.unitToggle}
+              onClick={() => setInput('sfDownIsPercent', !sfDownIsPercent)}>
+              {sfDownIsPercent ? '% → $' : '$ → %'}
+            </button>
+          </div>
+        </div>
         <StoreInput id="sfSellerRate" label="Seller Rate %" suffix="%" step="0.125" />
+      </div>
+      <div className={styles.row2}>
         <StoreInput id="sfSellerAmort" label="Seller Amort (Years)" />
-      </div>
-      <div className={styles.row2}>
         <StoreInput id="sfBalloonYears" label="Balloon Period (Years)" />
-        <StoreInput id="sfRefiLtv" label="Refi LTV % at Balloon" suffix="%" />
       </div>
       <div className={styles.row2}>
+        <StoreInput id="sfRefiLtv" label="Refi LTV % at Balloon" suffix="%" />
         <StoreInput id="sfAppreciation" label="Appreciation Rate % (Override)" suffix="%" placeholder="Use main" step="0.5" />
-        <div />
       </div>
       {results && (
         <div className={styles.offerSummary}>
           <div className={styles.osTitle}>Seller Finance Summary</div>
-          <div className={styles.osRow}><span className={styles.osLabel}>Seller Loan (100% of Price)</span><span className={styles.osValue}>{fmt(results.sellerLoanAmount)}</span></div>
+          {results.sfDownAmt > 0 && <div className={styles.osRow}><span className={styles.osLabel}>Down Payment</span><span className={styles.osValue}>{fmt(results.sfDownAmt)}</span></div>}
+          <div className={styles.osRow}><span className={styles.osLabel}>Seller Loan</span><span className={styles.osValue}>{fmt(results.sellerLoanAmount)}</span></div>
           <div className={styles.osRow}><span className={styles.osLabel}>Seller Monthly Payment</span><span className={styles.osValue}>{fmt(results.sellerMonthly)}</span></div>
           <div className={`${styles.osRow} ${styles.osTotal}`}>
             <span className={styles.osLabel}>Monthly Cash Flow</span>

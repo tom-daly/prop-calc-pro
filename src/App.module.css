@@ -1,6 +1,6 @@
 .main {
   display: grid;
-  grid-template-columns: 33% 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 20px;
   padding: 20px;
 }
@@ -12,6 +12,7 @@
 }
 
 .rightCol {
+  grid-column: span 2;
   display: flex;
   flex-direction: column;
   gap: 16px;

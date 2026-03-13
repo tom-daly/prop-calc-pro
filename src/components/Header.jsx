@@ -36,12 +36,12 @@ export default function Header() {
     if (!file) return
     try {
       const data = await doImport(file)
-      const newId = generateId()
       data.lastModified = Date.now()
       data.name = data.name || 'Imported'
       if (data.inputs) data.inputs.propertyName = data.name
-      saveToStorage(newId, data)
-      loadProperty(newId)
+      const id = currentPropertyId || generateId()
+      saveToStorage(id, data)
+      loadProperty(id)
       showToast('Imported!')
     } catch (err) {
       alert('Error reading file: ' + err.message)
@@ -60,7 +60,7 @@ export default function Header() {
       <div className={styles.leftGroup}>
         <div className={styles.logo}>
           <div className={styles.logoIcon}>🏠</div>
-          <span>PropCalc Pro</span>
+          <span>Prop Calc Pro</span>
         </div>
         <div className={styles.vaultSelect} onClick={() => setShowVault(true)}>
           <span>📦</span>

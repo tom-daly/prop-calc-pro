@@ -1,12 +1,7 @@
 import React from 'react'
 import styles from './ModeTabs.module.css'
 import usePropertyStore from '../store/usePropertyStore'
-
-const MODES = [
-  { key: 'traditional', label: 'Traditional' },
-  { key: 'dscr', label: 'Cash-Carry-Refi-DSCR' },
-  { key: 'offer', label: 'Offer' },
-]
+import { MODES } from '../utils/modes'
 
 export default function ModeTabs() {
   const mode = usePropertyStore(s => s.currentMode)

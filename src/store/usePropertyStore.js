@@ -1,18 +1,19 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { calculateAll, runStressTest, calculateOffer, calculateSellerFinance, calculateSubjectTo } from '../utils/calculations'
+import { calculateAll, runStressTest, calculateOffer, calculateSellerFinance, calculateSubjectTo, calculateMao } from '../utils/calculations'
 import { MORBY, SELLER_FINANCE, SUBJECT_TO } from '../utils/offerStrategies'
 import {
   generateId, getAllProperties, saveToStorage, loadFromStorage,
   deleteFromStorage, saveWorkingState, restoreWorkingState, clearWorkingState
 } from '../utils/persistence'
+import { TRADITIONAL, BRRRR, OFFER, REQUIRED_FIELDS } from '../utils/modes'
 
 export const MAX_UNITS = 10
 
 const DEFAULT_INPUTS = {
   propertyName: 'New Property Analysis',
   propertyAddress: '',
-  purchasePrice: '', exitArv: '',
+  listPrice: '', purchasePrice: '', exitArv: '',
   units: [{ rent: '', misc: '', beds: '', bath: '' }],
   vacancyRate: '',
   propTaxes: '', insurance: '', maintenance: '', utilities: '', propMgmt: '', capex: '', mortgageIns: '',
@@ -24,10 +25,13 @@ const DEFAULT_INPUTS = {
   morbySellerRate: '5', morbySellerAmort: '30', morbyBalloonYears: '7',
   morbyRefiLtv: '75', morbyAppreciation: '',
   // Seller Finance inputs
+  sfDownPayment: '', sfDownIsPercent: false,
   sfSellerRate: '5', sfSellerAmort: '30', sfBalloonYears: '7', sfRefiLtv: '75', sfAppreciation: '',
   // Subject-To inputs
   subToLoanBalance: '', subToRate: '', subToRemTerm: '25', subToEscrow: 'yes', subToDownPayment: '',
   subToSellerRate: '5', subToSellerAmort: '30', subToBalloonYears: '7', subToRefiLtv: '75', subToAppreciation: '',
+  // MAO
+  maoTargetCF: '',
 }
 
 const DEFAULT_EXPENSE_CONFIG = {
@@ -49,7 +53,7 @@ const DEFAULT_JV_CONFIG = {
 
 const usePropertyStore = create(subscribeWithSelector((set, get) => ({
   currentPropertyId: null,
-  currentMode: 'traditional',
+  currentMode: TRADITIONAL,
   offerStrategy: MORBY,
   inputs: { ...DEFAULT_INPUTS },
   expenseConfig: JSON.parse(JSON.stringify(DEFAULT_EXPENSE_CONFIG)),
@@ -59,7 +63,9 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
   // Computed results
   results: null,
   offerResults: null,
+  maoResults: null,
   stressResults: [],
+  emptyRequired: [],
 
   // Toast
   toastMessage: '',
@@ -145,7 +151,7 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
     const results = calculateAll(inputs, expenseConfig, currentMode, carryTranches)
     const stressResults = runStressTest(inputs, expenseConfig, currentMode, carryTranches)
     let offerResults = null
-    if (currentMode === 'offer') {
+    if (currentMode === OFFER) {
       if (offerStrategy === SELLER_FINANCE) {
         offerResults = calculateSellerFinance(inputs, expenseConfig)
       } else if (offerStrategy === SUBJECT_TO) {
@@ -154,7 +160,19 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
         offerResults = calculateOffer(inputs, expenseConfig)
       }
     }
-    set({ results, stressResults, offerResults })
+    const maoResults = (currentMode !== OFFER) ? calculateMao(inputs, expenseConfig, currentMode, carryTranches) : null
+
+    // Compute which required fields are still empty
+    const reqFields = REQUIRED_FIELDS[currentMode] || []
+    const empty = reqFields.filter(id => {
+      const v = inputs[id]
+      return v === '' || v === undefined || v === null
+    })
+    // Check unit rent — flag 'unitRent' if no unit has rent
+    const hasRent = (inputs.units || []).some(u => parseFloat(u.rent) > 0)
+    if (!hasRent) empty.push('unitRent')
+
+    set({ results, stressResults, offerResults, maoResults, emptyRequired: empty })
   },
 
   showToast: (message = 'Auto-saved') => {
@@ -194,17 +212,17 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
     if (!currentPropertyId) return
 
     const sharedInputIds = [
-      'propertyName', 'propertyAddress', 'purchasePrice', 'exitArv',
+      'propertyName', 'propertyAddress', 'listPrice', 'purchasePrice', 'exitArv',
       'vacancyRate',
       'propTaxes', 'insurance', 'maintenance', 'utilities', 'propMgmt', 'capex', 'mortgageIns',
       'utilElectric', 'utilGas', 'utilWater', 'utilTrash', 'utilLawn', 'utilOther',
       'appreciationRate', 'rentGrowth', 'costIncrease'
     ]
-    const traditionalInputIds = ['downPercent', 'closingCost', 'rehabCost', 'interestRate', 'loanTerm']
-    const dscrInputIds = ['closingCostDscr', 'rehabCostDscr', 'dscrLtv', 'carryMonths', 'carryRate', 'carryRentPercent', 'interestRate', 'loanTerm', 'jvSplitMain']
+    const traditionalInputIds = ['downPercent', 'closingCost', 'rehabCost', 'interestRate', 'loanTerm', 'maoTargetCF']
+    const dscrInputIds = ['closingCostDscr', 'rehabCostDscr', 'dscrLtv', 'carryMonths', 'carryRate', 'carryRentPercent', 'interestRate', 'loanTerm', 'jvSplitMain', 'maoTargetCF']
     const offerInputIds = [
       'morbyDownPct', 'morbyDscrRate', 'morbyDscrTerm', 'morbySellerRate', 'morbySellerAmort', 'morbyBalloonYears', 'morbyRefiLtv', 'morbyAppreciation',
-      'sfSellerRate', 'sfSellerAmort', 'sfBalloonYears', 'sfRefiLtv', 'sfAppreciation',
+      'sfDownPayment', 'sfDownIsPercent', 'sfSellerRate', 'sfSellerAmort', 'sfBalloonYears', 'sfRefiLtv', 'sfAppreciation',
       'subToLoanBalance', 'subToRate', 'subToRemTerm', 'subToEscrow', 'subToDownPayment', 'subToSellerRate', 'subToSellerAmort', 'subToBalloonYears', 'subToRefiLtv', 'subToAppreciation',
     ]
 
@@ -291,7 +309,7 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
       expenseConfig,
       carryTranches,
       jvConfig,
-      currentMode: data.currentMode || 'traditional',
+      currentMode: data.currentMode || TRADITIONAL,
       offerStrategy: data.offerStrategy || MORBY,
     })
     get().recalculate()
@@ -301,7 +319,7 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
     clearWorkingState()
     set({
       currentPropertyId: null,
-      currentMode: 'traditional',
+      currentMode: TRADITIONAL,
       offerStrategy: MORBY,
       inputs: { ...DEFAULT_INPUTS },
       expenseConfig: JSON.parse(JSON.stringify(DEFAULT_EXPENSE_CONFIG)),
@@ -376,7 +394,7 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
 
       set({
         currentPropertyId: saved.currentPropertyId,
-        currentMode: saved.currentMode || 'traditional',
+        currentMode: saved.currentMode || TRADITIONAL,
         offerStrategy: saved.offerStrategy || MORBY,
         inputs: newInputs,
         expenseConfig,

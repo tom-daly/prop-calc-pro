@@ -1,0 +1,15 @@
+/* Empty required field indicator */
+.input-needed {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25) !important;
+  background: rgba(245, 158, 11, 0.04) !important;
+}
+
+.input-needed-label {
+  color: #f59e0b !important;
+}
+
+@media print {
+  .input-needed { border-color: var(--border) !important; box-shadow: none !important; background: var(--card) !important; }
+  .input-needed-label { color: var(--text-muted) !important; }
+}

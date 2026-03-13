@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import styles from './PdfModal.module.css'
 import usePropertyStore from '../store/usePropertyStore'
 import PrintView from './PrintView'
+import { TRADITIONAL, BRRRR, OFFER } from '../utils/modes'
 
 const SECTIONS = [
   { key: 'acquisition', label: 'Acquisition Details', icon: '💰' },
@@ -11,9 +12,10 @@ const SECTIONS = [
   { key: 'metrics', label: 'Key Metrics & P&L', icon: '📊' },
   { key: 'milestones', label: 'Growth & Exit Milestones', icon: '⏱️' },
   { key: 'asset-debt', label: 'Asset/Debt Chart', icon: '📊' },
-  { key: 'stress-test', label: 'Stress Test', icon: '🔥', modes: ['traditional', 'dscr'] },
-  { key: 'balloon', label: 'Balloon Analysis', icon: '🎈', modes: ['offer'] },
-  { key: 'amortization', label: 'Year-by-Year Amortization', icon: '📋', modes: ['offer'] },
+  { key: 'mao', label: 'Max Allowable Offer', icon: '🎯', modes: [TRADITIONAL, BRRRR] },
+  { key: 'stress-test', label: 'Stress Test', icon: '🔥', modes: [TRADITIONAL, BRRRR] },
+  { key: 'balloon', label: 'Balloon Analysis', icon: '🎈', modes: [OFFER] },
+  { key: 'amortization', label: 'Year-by-Year Amortization', icon: '📋', modes: [OFFER] },
 ]
 
 const STORAGE_KEY = 'propcalc_pdf_sections'
@@ -70,7 +72,7 @@ export default function PdfModal() {
 
   const handleExport = () => {
     const origTitle = document.title
-    document.title = propertyName || 'PropCalc Pro Report'
+    document.title = propertyName || 'Prop Calc Pro Report'
     setOpen(false)
     setShowPrintView(true)
     // Restore title after print dialog

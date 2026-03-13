@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react'
 import './styles/variables.css'
+import './styles/required.css'
 import styles from './App.module.css'
 import usePropertyStore from './store/usePropertyStore'
+import { OFFER } from './utils/modes'
 import Header from './components/Header'
 import PrintHeader from './components/PrintHeader'
 import ModeTabs from './components/ModeTabs'
@@ -13,6 +15,7 @@ import MetricsBar from './components/MetricsBar'
 import MilestonesCard from './components/MilestonesCard'
 import AssetDebtChart from './components/AssetDebtChart'
 import StressTestCard from './components/StressTestCard'
+import MaoCard from './components/MaoCard'
 import BalloonAnalysis from './components/BalloonAnalysis'
 import OfferMetricsBar from './components/OfferMetricsBar'
 import OfferAmortTable from './components/OfferAmortTable'
@@ -39,12 +42,13 @@ export default function App() {
       <PrintHeader />
       {/* Print-only: metrics at top as overview (hidden on screen) */}
       <div data-print="top-metrics" style={{ display: 'none' }}>
-        {mode !== 'offer' ? <MetricsBar /> : <OfferMetricsBar />}
+        {mode !== OFFER ? <MetricsBar /> : <OfferMetricsBar />}
       </div>
       <main className={styles.main} data-print-layout="main">
         <div className={styles.leftCol}>
           <div data-print="hide"><ModeTabs /></div>
           <AcquisitionCard />
+          <MaoCard />
           <RevenueCard />
           <ExpensesCard />
         </div>
@@ -52,17 +56,17 @@ export default function App() {
           <GrowthCard />
           {/* Screen-only: metrics in normal position (hidden in print) */}
           <div data-print="hide">
-            {mode !== 'offer' ? <MetricsBar /> : <OfferMetricsBar />}
+            {mode !== OFFER ? <MetricsBar /> : <OfferMetricsBar />}
           </div>
           <MilestonesCard />
           <AssetDebtChart />
-          {mode === 'offer' && (
+          {mode === OFFER && (
             <>
               <BalloonAnalysis />
               <OfferAmortTable />
             </>
           )}
-          {mode !== 'offer' && <StressTestCard />}
+          {mode !== OFFER && <StressTestCard />}
         </div>
       </main>
       <Footer />

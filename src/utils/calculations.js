@@ -1,4 +1,5 @@
 import { SELLER_FINANCE, SUBJECT_TO } from './offerStrategies'
+import { TRADITIONAL, BRRRR } from './modes'
 
 // Sum gross monthly rent from units array (with legacy fallback)
 export function getGrossMonthlyRent(inputs) {
@@ -24,9 +25,16 @@ function num(val, fallback = 0) {
 function computeOfferChartAndMilestones(purchasePrice, appreciationRate, annualEffectiveRent, totalExpenses, annualDebtService, rentGrowthRate, costIncreaseRate, basisForGain, getDebtAtMonth) {
   const chartAssets = []
   const chartLoans = []
+  const chartRent = []
+  const chartCashFlow = []
   for (let y = 0; y <= 30; y++) {
     chartAssets.push(purchasePrice * Math.pow(1 + appreciationRate, y))
     chartLoans.push(getDebtAtMonth(y * 12))
+    const yRent = annualEffectiveRent * Math.pow(1 + rentGrowthRate, y)
+    const yExp = totalExpenses * Math.pow(1 + costIncreaseRate, y)
+    const yDebt = getDebtAtMonth(y * 12) > 0 ? annualDebtService : 0
+    chartRent.push(yRent)
+    chartCashFlow.push(yRent - yExp - yDebt)
   }
 
   function milestoneAt(years) {
@@ -42,7 +50,7 @@ function computeOfferChartAndMilestones(purchasePrice, appreciationRate, annualE
   const m10 = milestoneAt(10)
 
   return {
-    chartAssets, chartLoans,
+    chartAssets, chartLoans, chartRent, chartCashFlow,
     equity5: m5.equity, balance5: m5.balance, flow5: m5.flow, netGain5: m5.netGain,
     equity10: m10.equity, balance10: m10.balance, flow10: m10.flow, netGain10: m10.netGain,
   }
@@ -131,7 +139,7 @@ export function calculateAll(inputs, expenseConfig, mode, carryTranches) {
   // Traditional-specific
   let downAmount, feesAmount, rehabAmount
 
-  if (mode === 'dscr') {
+  if (mode === BRRRR) {
     const closingCost = parseFloat(inputs.closingCostDscr) || 0
     const rehabCost = parseFloat(inputs.rehabCostDscr) || 0
     const dscrLtv = parseFloat(inputs.dscrLtv) || 0
@@ -205,10 +213,12 @@ export function calculateAll(inputs, expenseConfig, mode, carryTranches) {
   const cashFlow = noi - annualDebtService
   const monthlyCashFlow = cashFlow / 12
 
-  const dscrRatio = annualDebtService > 0 ? noi / annualDebtService : 0
+  // DSCR = Gross Rent / PITIA (lender formula — excludes maintenance, capex, mgmt, utilities)
+  const annualPitia = annualDebtService + (expenseYearly.propTaxes || 0) + (expenseYearly.insurance || 0) + (expenseYearly.mortgageIns || 0)
+  const dscrRatio = annualPitia > 0 ? annualGrossRent / annualPitia : 0
   const capRate = purchasePrice > 0 ? (noi / purchasePrice) * 100 : 0
 
-  const jvSplit = mode === 'dscr' ? (parseFloat(inputs.jvSplitMain) || 100) : 100
+  const jvSplit = mode === BRRRR ? (parseFloat(inputs.jvSplitMain) || 100) : 100
   const displayMonthlyCF = monthlyCashFlow * (jvSplit / 100)
   const displayAnnualCF = cashFlow * (jvSplit / 100)
   const cashOnCash = cashBasis > 0 ? (displayAnnualCF / cashBasis) * 100 : 0
@@ -219,7 +229,15 @@ export function calculateAll(inputs, expenseConfig, mode, carryTranches) {
   const rentGrowthRate = (parseFloat(inputs.rentGrowth) || 0) / 100
   const costIncreaseRate = (parseFloat(inputs.costIncrease) || 0) / 100
 
-  const basisForGain = mode === 'dscr' ? Math.max(totalOutOfPocket, 0) : totalOutOfPocket
+  const basisForGain = mode === BRRRR ? Math.max(totalOutOfPocket, 0) : totalOutOfPocket
+
+  // Year 1
+  const value1 = exitArv * Math.pow(1 + appreciationRate, 1)
+  const balance1 = getLoanBalance(loanAmount, interestRate, loanTerm, 12)
+  const equity1 = value1 - balance1
+  const flow1 = getCumulativeFlow(annualEffectiveRent, totalExpenses, annualDebtService, rentGrowthRate, costIncreaseRate, 1)
+  const netGain1 = equity1 + flow1 - basisForGain
+  const monthlyCF1 = (annualEffectiveRent - totalExpenses - annualDebtService) / 12
 
   // Year 5
   const value5 = exitArv * Math.pow(1 + appreciationRate, 5)
@@ -227,6 +245,7 @@ export function calculateAll(inputs, expenseConfig, mode, carryTranches) {
   const equity5 = value5 - balance5
   const flow5 = getCumulativeFlow(annualEffectiveRent, totalExpenses, annualDebtService, rentGrowthRate, costIncreaseRate, 5)
   const netGain5 = equity5 + flow5 - basisForGain
+  const monthlyCF5 = (annualEffectiveRent * Math.pow(1 + rentGrowthRate, 5) - totalExpenses * Math.pow(1 + costIncreaseRate, 5) - annualDebtService) / 12
 
   // Year 10
   const value10 = exitArv * Math.pow(1 + appreciationRate, 10)
@@ -234,13 +253,21 @@ export function calculateAll(inputs, expenseConfig, mode, carryTranches) {
   const equity10 = value10 - balance10
   const flow10 = getCumulativeFlow(annualEffectiveRent, totalExpenses, annualDebtService, rentGrowthRate, costIncreaseRate, 10)
   const netGain10 = equity10 + flow10 - basisForGain
+  const monthlyCF10 = (annualEffectiveRent * Math.pow(1 + rentGrowthRate, 10) - totalExpenses * Math.pow(1 + costIncreaseRate, 10) - annualDebtService) / 12
 
   // Chart data (30 years)
   const chartAssets = []
   const chartLoans = []
+  const chartRent = []
+  const chartCashFlow = []
   for (let y = 0; y <= 30; y++) {
     chartAssets.push(exitArv * Math.pow(1 + appreciationRate, y))
     chartLoans.push(y * 12 <= loanTerm * 12 ? getLoanBalance(loanAmount, interestRate, loanTerm, y * 12) : 0)
+    const yRent = annualEffectiveRent * Math.pow(1 + rentGrowthRate, y)
+    const yExp = totalExpenses * Math.pow(1 + costIncreaseRate, y)
+    const yDebt = y * 12 < loanTerm * 12 ? annualDebtService : 0
+    chartRent.push(yRent)
+    chartCashFlow.push(yRent - yExp - yDebt)
   }
 
   // DSCR indicator
@@ -274,10 +301,11 @@ export function calculateAll(inputs, expenseConfig, mode, carryTranches) {
     // Basis
     cashBasis, totalOutOfPocket, basisForGain,
     // Milestones
-    equity5, balance5, flow5, netGain5,
-    equity10, balance10, flow10, netGain10,
+    equity1, balance1, flow1, netGain1, monthlyCF1,
+    equity5, balance5, flow5, netGain5, monthlyCF5,
+    equity10, balance10, flow10, netGain10, monthlyCF10,
     // Chart
-    chartAssets, chartLoans,
+    chartAssets, chartLoans, chartRent, chartCashFlow,
     // DSCR indicator
     dscrEmoji, dscrStatusText, dscrColorClass, dscrActiveRowIndex, dscrDetails,
     dscrPriceRanges,
@@ -286,7 +314,7 @@ export function calculateAll(inputs, expenseConfig, mode, carryTranches) {
     downAmount, feesAmount, rehabAmount,
     // DSCR
     dscrPurchase, dscrFees, dscrRehab, dscrCarry,
-    dscrLoanAmount: mode === 'dscr' ? loanAmount : undefined,
+    dscrLoanAmount: mode === BRRRR ? loanAmount : undefined,
     dscrLtvDisplay, dscrArvDisplay, dscrCashLeft,
     dscrHighlightLabel, dscrHighlightLabelClass,
     // For stress test
@@ -295,7 +323,7 @@ export function calculateAll(inputs, expenseConfig, mode, carryTranches) {
 }
 
 function computeDscrPriceRanges(noi, interestRate, loanTerm, mode, ltvPct, downPct) {
-  const divisor = mode === 'dscr' ? (ltvPct / 100) : (1 - downPct / 100)
+  const divisor = mode === BRRRR ? (ltvPct / 100) : (1 - downPct / 100)
   if (noi <= 0 || interestRate === 0 || divisor <= 0) return null
 
   const thresholds = [1.25, 1.15, 1.05, 1.00]
@@ -320,7 +348,7 @@ export function runStressTest(inputs, expenseConfig, mode, carryTranches) {
   const annualGrossRent = grossMonthlyRent * 12
 
   let loanAmount, cashBasis
-  if (mode === 'dscr') {
+  if (mode === BRRRR) {
     const dscrLtv = parseFloat(inputs.dscrLtv) || 0
     const closingCost = parseFloat(inputs.closingCostDscr) || 0
     const rehabCost = parseFloat(inputs.rehabCostDscr) || 0
@@ -339,7 +367,7 @@ export function runStressTest(inputs, expenseConfig, mode, carryTranches) {
     cashBasis = downPayment + closingCost + rehabCost
   }
 
-  const jvSplit = mode === 'dscr' ? (parseFloat(inputs.jvSplitMain) || 100) : 100
+  const jvSplit = mode === BRRRR ? (parseFloat(inputs.jvSplitMain) || 100) : 100
 
   const baseInsurance = parseFloat(inputs.insurance) || 0
   const insuranceConfig = expenseConfig.insurance
@@ -347,8 +375,9 @@ export function runStressTest(inputs, expenseConfig, mode, carryTranches) {
     ? annualGrossRent * (baseInsurance / 100)
     : (insuranceConfig.freq === 'mo' ? baseInsurance * 12 : baseInsurance)
 
-  function calcTotalExpenses(grossRent, insuranceMultiplier = 1.0) {
+  function calcExpenseBreakdown(grossRent, insuranceMultiplier = 1.0) {
     let total = 0
+    let taxes = 0, insurance = 0, mortgageIns = 0
     const fields = ['propTaxes', 'insurance', 'maintenance', 'utilities', 'propMgmt', 'capex', 'mortgageIns']
     fields.forEach(field => {
       const val = parseFloat(inputs[field]) || 0
@@ -360,9 +389,12 @@ export function runStressTest(inputs, expenseConfig, mode, carryTranches) {
         expense = config.freq === 'mo' ? val * 12 : val
       }
       if (field === 'insurance') expense *= insuranceMultiplier
+      if (field === 'propTaxes') taxes = expense
+      if (field === 'insurance') insurance = expense
+      if (field === 'mortgageIns') mortgageIns = expense
       total += expense
     })
-    return total
+    return { total, taxes, insurance, mortgageIns }
   }
 
   function calcScenario(rentMultiplier, vacancyOverride, rateOverride, insuranceMultiplier = 1.0) {
@@ -371,13 +403,15 @@ export function runStressTest(inputs, expenseConfig, mode, carryTranches) {
     const adjRate = rateOverride !== null ? rateOverride : interestRate
 
     const effectiveRent = adjGrossRent * (1 - adjVacancy / 100)
-    const expenses = calcTotalExpenses(adjGrossRent, insuranceMultiplier)
-    const noi = effectiveRent - expenses
+    const exp = calcExpenseBreakdown(adjGrossRent, insuranceMultiplier)
+    const noi = effectiveRent - exp.total
 
     const mp = calculateMortgage(loanAmount, adjRate, loanTerm)
     const annualDebt = mp * 12
 
-    const dscr = annualDebt > 0 ? noi / annualDebt : 0
+    // DSCR = Gross Rent / PITIA (lender formula)
+    const pitia = annualDebt + exp.taxes + exp.insurance + exp.mortgageIns
+    const dscr = pitia > 0 ? adjGrossRent / pitia : 0
     const cf = noi - annualDebt
     const monthlyCF = (cf / 12) * (jvSplit / 100)
     const coc = cashBasis > 0 ? ((cf * (jvSplit / 100)) / cashBasis) * 100 : 0
@@ -389,12 +423,12 @@ export function runStressTest(inputs, expenseConfig, mode, carryTranches) {
     { name: '\u{1F4CD} Base Case', rent: 1.0, vacancy: null, rate: null, insurance: 1.0, isBase: true },
     { name: '\u{1F4C9} Rent -10%', rent: 0.9, vacancy: null, rate: null, insurance: 1.0 },
     { name: '\u{1F4C9} Rent -20%', rent: 0.8, vacancy: null, rate: null, insurance: 1.0 },
-    { name: '\u{1F3DA}\uFE0F Vacancy 15%', rent: 1.0, vacancy: 15, rate: null, insurance: 1.0 },
-    { name: '\u{1F3DA}\uFE0F Vacancy 25%', rent: 1.0, vacancy: 25, rate: null, insurance: 1.0 },
+    { name: '\u{1F3DA}\uFE0F Vacancy 15% (~2 mo)', rent: 1.0, vacancy: 15, rate: null, insurance: 1.0 },
+    { name: '\u{1F3DA}\uFE0F Vacancy 25% (3 mo)', rent: 1.0, vacancy: 25, rate: null, insurance: 1.0 },
     { name: '\u{1F4C8} Interest +1% (' + (interestRate + 1).toFixed(1) + '%)', rent: 1.0, vacancy: null, rate: interestRate + 1, insurance: 1.0 },
     { name: '\u{1F6E1}\uFE0F Insurance 1.5x ($' + Math.round(baseInsuranceYearly * 1.5).toLocaleString() + '/yr)', rent: 1.0, vacancy: null, rate: null, insurance: 1.5 },
     { name: '\u{1F6E1}\uFE0F Insurance 2x ($' + Math.round(baseInsuranceYearly * 2).toLocaleString() + '/yr)', rent: 1.0, vacancy: null, rate: null, insurance: 2.0 },
-    { name: '\u{1F480} Worst: Rent -15%, Vac 20%, Ins 2x', rent: 0.85, vacancy: 20, rate: null, insurance: 2.0 },
+    { name: '\u{1F480} Worst: Rent -15%, Vac 20% (~2.5 mo), Ins 2x', rent: 0.85, vacancy: 20, rate: null, insurance: 2.0 },
   ]
 
   return scenarios.map(s => {
@@ -548,7 +582,9 @@ export function calculateSellerFinance(inputs, expenseConfig) {
   const noi = annualEffectiveRent - totalExpenses
   const capRate = purchasePrice > 0 ? (noi / purchasePrice) * 100 : 0
 
-  const sellerLoanAmount = purchasePrice
+  const sfDownRaw = num(inputs.sfDownPayment)
+  const sfDownAmt = inputs.sfDownIsPercent ? purchasePrice * sfDownRaw / 100 : sfDownRaw
+  const sellerLoanAmount = Math.max(purchasePrice - sfDownAmt, 0)
   const sellerMonthly = calculateMortgage(sellerLoanAmount, sellerRate, sellerAmort)
   const totalMonthlyDebt = sellerMonthly
 
@@ -599,7 +635,7 @@ export function calculateSellerFinance(inputs, expenseConfig) {
 
   return {
     strategy: SELLER_FINANCE,
-    sellerLoanAmount, sellerMonthly, totalMonthlyDebt,
+    sfDownAmt, sellerLoanAmount, sellerMonthly, totalMonthlyDebt,
     monthlyCF, noi, capRate,
     balloonYears, projectedValue, sellerBalanceAtBalloon,
     totalPayoff, maxRefi, surplus,
@@ -765,6 +801,136 @@ export function runJvSimulation(cashIn, preRefiCF, postRefiCF, refiMonth, paybac
 
   results.fullPaybackMonth = fullPaybackMonth
   return results
+}
+
+// MAO (Max Allowable Offer) calculation
+export function calculateMao(inputs, expenseConfig, mode, carryTranches) {
+  const targetMonthlyCF = parseFloat(inputs.maoTargetCF) || 0
+  const targetAnnualCF = targetMonthlyCF * 12
+
+  const grossMonthlyRent = getGrossMonthlyRent(inputs)
+  const vacancyRate = parseFloat(inputs.vacancyRate) || 0
+  const effectiveMonthlyRent = grossMonthlyRent * (1 - vacancyRate / 100)
+  const annualEffectiveRent = effectiveMonthlyRent * 12
+  const annualGrossRent = grossMonthlyRent * 12
+
+  const expenseFields = ['propTaxes', 'insurance', 'maintenance', 'utilities', 'propMgmt', 'capex', 'mortgageIns']
+  let totalExpenses = 0
+  expenseFields.forEach(field => {
+    const val = parseFloat(inputs[field]) || 0
+    totalExpenses += calcExpenseYearly(field, val, expenseConfig[field], annualGrossRent)
+  })
+
+  const noi = annualEffectiveRent - totalExpenses
+  const interestRate = parseFloat(inputs.interestRate) || 0
+  const loanTerm = parseFloat(inputs.loanTerm) || 30
+
+  if (mode === TRADITIONAL) {
+    const downPct = parseFloat(inputs.downPercent) || 0
+    if (downPct >= 100) return { maxPriceCF: null, reason: 'Down payment is 100% — no loan to size' }
+
+    const maxAnnualDebt = noi - targetAnnualCF
+    if (maxAnnualDebt <= 0) return { maxPriceCF: null, noi, reason: 'NOI too low for target cash flow' }
+
+    const maxMonthlyPayment = maxAnnualDebt / 12
+    const maxLoan = calculateMaxLoan(maxMonthlyPayment, interestRate, loanTerm)
+    const maxPrice = maxLoan / (1 - downPct / 100)
+
+    return { maxPriceCF: maxPrice, noi, maxAnnualDebt, targetMonthlyCF }
+  }
+
+  // BRRRR mode
+  const exitArv = parseFloat(inputs.exitArv) || 0
+  const dscrLtv = parseFloat(inputs.dscrLtv) || 0
+  const closingCost = parseFloat(inputs.closingCostDscr) || 0
+  const rehabCost = parseFloat(inputs.rehabCostDscr) || 0
+  const carryMonths = parseFloat(inputs.carryMonths) || 0
+  const carryRate = parseFloat(inputs.carryRate) || 0
+
+  const loanAmount = exitArv * (dscrLtv / 100)
+  const monthlyPayment = calculateMortgage(loanAmount, interestRate, loanTerm)
+  const annualDebtService = monthlyPayment * 12
+  const monthlyCF = (noi - annualDebtService) / 12
+
+  // Cash-out MAO: max price where refi covers all costs
+  // totalCashIn = (price + closing + rehab) + carry
+  // carry ≈ (price + closing + rehab) * (carryRate/100) * (carryMonths/12) (simple approximation)
+  // For cash-out: totalCashIn <= loanAmount
+  const carryMultiplier = 1 + (carryRate / 100) * (carryMonths / 12)
+  const cashOutMaxPrice = Math.max((loanAmount / carryMultiplier) - closingCost - rehabCost, 0)
+
+  // Estimate carry at the cash-out MAO price
+  const carryEstimate = (cashOutMaxPrice + closingCost + rehabCost) * (carryRate / 100) * (carryMonths / 12)
+
+  // % of ARV for cash-out MAO
+  const cashOutArvPct = exitArv > 0 ? Math.round((cashOutMaxPrice / exitArv) * 100) : 0
+
+  // 65% / 70% rule MAO
+  const rule65MaxPrice = Math.max(exitArv * 0.65 - rehabCost, 0)
+  const rule70MaxPrice = Math.max(exitArv * 0.70 - rehabCost, 0)
+
+  const annualCF = noi - annualDebtService
+
+  // Target CoC MAOs at common thresholds (8%, 10%, 12%)
+  // cashInDeal = (price + closing + rehab) * carryMultiplier - loanAmount
+  // CoC = annualCF / cashInDeal → cashInDeal = annualCF / targetCoC
+  // price = (cashInDeal + loanAmount) / carryMultiplier - closing - rehab
+  const cocTargets = [12, 10, 8]
+  const cocMaoRows = annualCF > 0 ? cocTargets.map(pct => {
+    const targetCashInDeal = annualCF / (pct / 100)
+    const maxPrice = Math.max((targetCashInDeal + loanAmount) / carryMultiplier - closingCost - rehabCost, 0)
+    return { cocPct: pct, maxPrice }
+  }) : []
+
+  // CF feasibility flag
+  const cfMeetsTarget = targetMonthlyCF > 0 ? monthlyCF >= targetMonthlyCF : null
+
+  // CF Gap Analysis — what needs to change to hit target CF
+  let cfGap = null
+  if (targetMonthlyCF > 0 && monthlyCF < targetMonthlyCF) {
+    const shortfall = targetMonthlyCF - monthlyCF // monthly shortfall
+    const annualShortfall = shortfall * 12
+
+    // 1. How much more rent per month (across all units)
+    const rentIncrease = shortfall / (1 - vacancyRate / 100) // gross rent needed (accounting for vacancy)
+
+    // 2. How much to reduce expenses by
+    const expenseReduction = shortfall
+
+    // 3. What refi LTV would produce target CF
+    //    targetAnnualDebt = noi - targetAnnualCF
+    //    targetMonthlyPayment = targetAnnualDebt / 12
+    //    targetLoan = calculateMaxLoan(targetMonthlyPayment, interestRate, loanTerm)
+    //    targetLtv = targetLoan / exitArv * 100
+    const targetAnnualDebt = noi - (targetMonthlyCF * 12)
+    let targetLtv = null
+    if (targetAnnualDebt > 0 && exitArv > 0) {
+      const targetMonthlyPayment = targetAnnualDebt / 12
+      const targetLoan = calculateMaxLoan(targetMonthlyPayment, interestRate, loanTerm)
+      targetLtv = Math.round((targetLoan / exitArv) * 100)
+    }
+
+    cfGap = { shortfall, rentIncrease, expenseReduction, targetLtv }
+  }
+
+  return {
+    monthlyCF,
+    annualCF,
+    cashOutMaxPrice,
+    cashOutArvPct,
+    rule65MaxPrice,
+    rule70MaxPrice,
+    loanAmount,
+    ltvDisplay: dscrLtv + '% LTV',
+    closingCost,
+    rehabCost,
+    carryEstimate,
+    noi,
+    targetMonthlyCF,
+    cocMaoRows,
+    cfMeetsTarget,
+    cfGap,
+  }
 }
 
 // Carry schedule computation

@@ -7,6 +7,7 @@ import { fmt } from '../utils/format'
 function UnitBox({ index, unit, isOnly }) {
   const setUnitInput = usePropertyStore(s => s.setUnitInput)
   const removeUnit = usePropertyStore(s => s.removeUnit)
+  const rentNeeded = usePropertyStore(s => s.emptyRequired.includes('unitRent'))
 
   return (
     <div className={styles.unitBox}>
@@ -31,8 +32,8 @@ function UnitBox({ index, unit, isOnly }) {
         </div>
       </div>
       <div className={styles.inputGroup}>
-        <label>Monthly Rent</label>
-        <div className={styles.inputWrap}>
+        <label className={rentNeeded ? 'input-needed-label' : ''}>Monthly Rent</label>
+        <div className={`${styles.inputWrap} ${rentNeeded ? 'input-needed' : ''}`}>
           <span className={styles.prefix}>$</span>
           <input type="number" value={unit.rent} placeholder="0" onChange={e => setUnitInput(index, 'rent', e.target.value)} />
         </div>

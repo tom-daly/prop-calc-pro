@@ -1,0 +1,56 @@
+.bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.metric {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.highlight {
+  background: var(--highlight);
+  border-color: var(--highlight);
+}
+
+.label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+
+.highlight .label {
+  color: var(--text-light);
+}
+
+.value {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.highlight .value {
+  color: var(--highlight-text);
+}
+
+.sub {
+  font-size: 9px;
+  color: var(--text-light);
+  text-transform: uppercase;
+}
+
+@media print {
+  .bar { gap: 3px; }
+  .metric { padding: 4px; border-radius: 4px; }
+  .value { font-size: 14px; margin-top: 1px; }
+  .label { font-size: 8px; }
+  .sub { font-size: 7px; }
+}

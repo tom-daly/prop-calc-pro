@@ -13,9 +13,7 @@ export default function StressTestCard() {
           <thead>
             <tr>
               <th>Scenario</th>
-              <th>DSCR</th>
               <th>Monthly CF</th>
-              <th>CoC</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -23,12 +21,8 @@ export default function StressTestCard() {
             {stressResults.map((s, i) => (
               <tr key={i} className={s.isBase ? styles.baseCase : ''}>
                 <td className={styles.scenarioName}>{s.name}</td>
-                <td>{s.dscr.toFixed(2)}</td>
                 <td className={s.monthlyCF >= 0 ? styles.valuePositive : styles.valueNegative}>
                   ${Math.round(s.monthlyCF).toLocaleString()}
-                </td>
-                <td className={s.coc >= 0 ? styles.valuePositive : styles.valueNegative}>
-                  {s.coc.toFixed(1)}%
                 </td>
                 <td className={styles[s.statusClass]}>{s.status}</td>
               </tr>

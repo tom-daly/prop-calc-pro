@@ -1,5 +1,5 @@
 import React from 'react'
-import styles from './MetricsBar.module.css'
+import styles from './OfferMetricsBar.module.css'
 import usePropertyStore from '../store/usePropertyStore'
 import { fmt, fmtPct } from '../utils/format'
 
@@ -11,8 +11,12 @@ export default function OfferMetricsBar() {
   const annualDebt = r.totalMonthlyDebt * 12
   const dscrRatio = annualDebt > 0 ? r.noi / annualDebt : 0
 
+  // Cash basis depends on strategy: Morby = DSCR loan (down payment), SF = down payment, SubTo = down payment
+  const cashBasis = r.dscrLoanAmount || r.sfDownAmt || r.downPayment || 0
+  const cashOnCash = cashBasis > 0 ? (annualCF / cashBasis) * 100 : 0
+
   return (
-    <div className={styles.metricsBar} data-section="metrics">
+    <div className={styles.bar} data-section="metrics">
       <div className={styles.metric}>
         <div className={styles.label}>DSCR</div>
         <div className={styles.value}>{dscrRatio.toFixed(2)}</div>
@@ -29,9 +33,9 @@ export default function OfferMetricsBar() {
         <div className={styles.sub}>After Debt</div>
       </div>
       <div className={`${styles.metric} ${styles.highlight}`}>
-        <div className={styles.label}>Total Debt Svc</div>
-        <div className={styles.value}>{fmt(r.totalMonthlyDebt)}</div>
-        <div className={styles.sub}>/Month</div>
+        <div className={styles.label}>Cash-on-Cash</div>
+        <div className={styles.value}>{cashBasis > 0 ? fmtPct(cashOnCash) : '∞'}</div>
+        <div className={styles.sub}>{cashBasis > 0 ? fmt(cashBasis) + ' basis' : 'No cash in'}</div>
       </div>
     </div>
   )
