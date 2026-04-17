@@ -43,16 +43,19 @@ function computeOfferChartAndMilestones(purchasePrice, appreciationRate, annualE
     const equity = value - debt
     const flow = getCumulativeFlow(annualEffectiveRent, totalExpenses, annualDebtService, rentGrowthRate, costIncreaseRate, years)
     const netGain = equity + flow - basisForGain
-    return { equity, balance: debt, flow, netGain }
+    const monthlyCF = (annualEffectiveRent * Math.pow(1 + rentGrowthRate, years) - totalExpenses * Math.pow(1 + costIncreaseRate, years) - annualDebtService) / 12
+    return { equity, balance: debt, flow, netGain, monthlyCF }
   }
 
+  const m1 = milestoneAt(1)
   const m5 = milestoneAt(5)
   const m10 = milestoneAt(10)
 
   return {
     chartAssets, chartLoans, chartRent, chartCashFlow,
-    equity5: m5.equity, balance5: m5.balance, flow5: m5.flow, netGain5: m5.netGain,
-    equity10: m10.equity, balance10: m10.balance, flow10: m10.flow, netGain10: m10.netGain,
+    equity1: m1.equity, balance1: m1.balance, flow1: m1.flow, netGain1: m1.netGain, monthlyCF1: m1.monthlyCF,
+    equity5: m5.equity, balance5: m5.balance, flow5: m5.flow, netGain5: m5.netGain, monthlyCF5: m5.monthlyCF,
+    equity10: m10.equity, balance10: m10.balance, flow10: m10.flow, netGain10: m10.netGain, monthlyCF10: m10.monthlyCF,
   }
 }
 
@@ -541,6 +544,7 @@ export function calculateOffer(inputs, expenseConfig) {
     dscrLoanAmount, sellerCarryAmount,
     dscrMonthly, sellerMonthly, totalMonthlyDebt,
     monthlyCF, noi, capRate,
+    annualEffectiveRent, totalExpenses, effectiveMonthlyRent,
     // Balloon
     balloonYears, projectedValue, sellerBalanceAtBalloon, dscrBalanceAtBalloon,
     totalPayoff, maxRefi, surplus,
@@ -637,6 +641,7 @@ export function calculateSellerFinance(inputs, expenseConfig) {
     strategy: SELLER_FINANCE,
     sfDownAmt, sellerLoanAmount, sellerMonthly, totalMonthlyDebt,
     monthlyCF, noi, capRate,
+    annualEffectiveRent, totalExpenses, effectiveMonthlyRent,
     balloonYears, projectedValue, sellerBalanceAtBalloon,
     totalPayoff, maxRefi, surplus,
     amortRows,
@@ -644,21 +649,16 @@ export function calculateSellerFinance(inputs, expenseConfig) {
   }
 }
 
-// Subject-To calculation — take over existing mortgage + optional seller carry for equity gap
+// Subject-To calculation — pure mortgage takeover, pay seller for equity
 export function calculateSubjectTo(inputs, expenseConfig) {
-  const purchasePrice = num(inputs.purchasePrice)
   const existingBalance = num(inputs.subToLoanBalance)
   const existingRate = num(inputs.subToRate)
   const existingRemTerm = num(inputs.subToRemTerm, 25)
-  const downPayment = num(inputs.subToDownPayment)
-  const sellerRate = num(inputs.subToSellerRate, 5)
-  const sellerAmort = num(inputs.subToSellerAmort, 30)
-  const balloonYears = num(inputs.subToBalloonYears, 7)
-  const refiLtv = num(inputs.subToRefiLtv, 75)
+  const purchasePrice = num(inputs.purchasePrice)
+  const eqRaw = num(inputs.subToEquityPayment)
+  const equityPayment = inputs.subToEquityIsPercent ? purchasePrice * eqRaw / 100 : eqRaw
 
-  const subToApprecInput = inputs.subToAppreciation
-  const appreciationRate = (subToApprecInput !== '' && subToApprecInput !== undefined && subToApprecInput !== null
-    ? parseFloat(subToApprecInput) : (parseFloat(inputs.appreciationRate) || 0)) / 100
+  const appreciationRate = (parseFloat(inputs.appreciationRate) || 0) / 100
 
   const rentGrowthRate = (parseFloat(inputs.rentGrowth) || 0) / 100
   const costIncreaseRate = (parseFloat(inputs.costIncrease) || 0) / 100
@@ -682,77 +682,38 @@ export function calculateSubjectTo(inputs, expenseConfig) {
   const noi = annualEffectiveRent - totalExpenses
   const capRate = purchasePrice > 0 ? (noi / purchasePrice) * 100 : 0
 
-  // Existing mortgage payment
+  // Existing mortgage payment (the only debt)
   const existingMonthly = calculateMortgage(existingBalance, existingRate, existingRemTerm)
-
-  // Equity gap = purchase price - existing balance - down payment → seller carry
-  const equityGap = Math.max(purchasePrice - existingBalance - downPayment, 0)
-  const sellerCarryAmount = equityGap
-  const sellerMonthly = sellerCarryAmount > 0 ? calculateMortgage(sellerCarryAmount, sellerRate, sellerAmort) : 0
-  const totalMonthlyDebt = existingMonthly + sellerMonthly
+  const totalMonthlyDebt = existingMonthly
 
   const monthlyExpenses = totalExpenses / 12
   const monthlyCF = effectiveMonthlyRent - monthlyExpenses - totalMonthlyDebt
 
-  // Balloon analysis
-  const balloonMonths = balloonYears * 12
-  const projectedValue = purchasePrice * Math.pow(1 + appreciationRate, balloonYears)
-  const existingBalanceAtBalloon = getLoanBalance(existingBalance, existingRate, existingRemTerm, balloonMonths)
-  const sellerBalanceAtBalloon = sellerCarryAmount > 0
-    ? getLoanBalance(sellerCarryAmount, sellerRate, sellerAmort, balloonMonths)
-    : 0
-  const totalPayoff = existingBalanceAtBalloon + sellerBalanceAtBalloon
-  const maxRefi = projectedValue * (refiLtv / 100)
-  const surplus = maxRefi - totalPayoff
-
-  // Amortization table
-  const numRows = Math.max(balloonYears + 3, 10)
-  const amortRows = []
-  let cumulativeCF = 0
-  let yearlyRent = effectiveMonthlyRent * 12
-  let yearlyExp = totalExpenses
-
-  for (let y = 1; y <= numRows; y++) {
-    if (y > 1) {
-      yearlyRent *= (1 + rentGrowthRate)
-      yearlyExp *= (1 + costIncreaseRate)
-    }
-    const propValue = purchasePrice * Math.pow(1 + appreciationRate, y)
-    const existBal = getLoanBalance(existingBalance, existingRate, existingRemTerm, y * 12)
-    const sellerBal = sellerCarryAmount > 0 && y * 12 <= sellerAmort * 12
-      ? getLoanBalance(sellerCarryAmount, sellerRate, sellerAmort, y * 12) : 0
-    const totalDebt = existBal + sellerBal
-    const equity = propValue - totalDebt
-    const annualDebt = totalMonthlyDebt * 12
-    const annualCF = yearlyRent - yearlyExp - annualDebt
-    cumulativeCF += annualCF
-
-    amortRows.push({
-      year: y,
-      isBalloon: y === balloonYears,
-      propValue, existingBal: Math.max(existBal, 0), sellerBal: Math.max(sellerBal, 0),
-      totalDebt: Math.max(totalDebt, 0), equity, annualCF, cumulativeCF
-    })
-  }
-
   const chartMilestones = computeOfferChartAndMilestones(
     purchasePrice, appreciationRate, annualEffectiveRent, totalExpenses,
-    totalMonthlyDebt * 12, rentGrowthRate, costIncreaseRate, downPayment,
-    (months) => {
-      const e = getLoanBalance(existingBalance, existingRate, existingRemTerm, months)
-      const s = sellerCarryAmount > 0 && months <= sellerAmort * 12
-        ? getLoanBalance(sellerCarryAmount, sellerRate, sellerAmort, months) : 0
-      return Math.max(e, 0) + Math.max(s, 0)
-    }
+    totalMonthlyDebt * 12, rentGrowthRate, costIncreaseRate, equityPayment,
+    (months) => Math.max(getLoanBalance(existingBalance, existingRate, existingRemTerm, months), 0)
   )
+
+  // Seller comparison: traditional sale vs sub-to
+  const listPrice = num(inputs.subToListPrice)
+  const commissionPct = num(inputs.subToCommissionPct, 6)
+  const closingCosts = num(inputs.subToClosingCosts)
+  let sellerComparison = null
+  if (listPrice > 0) {
+    const commission = listPrice * (commissionPct / 100)
+    const sellerNetTraditional = listPrice - existingBalance - commission - closingCosts
+    const sellerAdvantage = equityPayment - sellerNetTraditional
+    sellerComparison = { listPrice, commissionPct, commission, closingCosts, sellerNetTraditional, sellerAdvantage }
+  }
 
   return {
     strategy: SUBJECT_TO,
-    existingBalance, existingMonthly, downPayment, sellerCarryAmount, sellerMonthly, totalMonthlyDebt,
+    purchasePrice, existingBalance, existingMonthly, totalMonthlyDebt,
+    equityPayment,
     monthlyCF, noi, capRate,
-    balloonYears, projectedValue, existingBalanceAtBalloon, sellerBalanceAtBalloon,
-    totalPayoff, maxRefi, surplus,
-    amortRows,
+    annualEffectiveRent, totalExpenses, effectiveMonthlyRent,
+    sellerComparison,
     ...chartMilestones
   }
 }

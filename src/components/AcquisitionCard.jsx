@@ -180,7 +180,6 @@ function OfferInputs() {
         ))}
       </div>
 
-      {strategy === MORBY && <MorbyInputs results={results} />}
       {strategy === SELLER_FINANCE && <SellerFinanceInputs results={results} />}
       {strategy === SUBJECT_TO && <SubjectToInputs results={results} />}
     </div>
@@ -282,7 +281,27 @@ function SellerFinanceInputs({ results }) {
 
 function SubjectToInputs({ results }) {
   const escrow = usePropertyStore(s => s.inputs.subToEscrow)
+  const subToEquityPayment = usePropertyStore(s => s.inputs.subToEquityPayment)
+  const subToEquityIsPercent = usePropertyStore(s => s.inputs.subToEquityIsPercent)
+  const purchasePrice = parseFloat(usePropertyStore(s => s.inputs.purchasePrice)) || 0
   const setInput = usePropertyStore(s => s.setInput)
+  const [eqFocused, setEqFocused] = React.useState(false)
+  const isDollar = !subToEquityIsPercent
+  const eqDisplay = isDollar && !eqFocused ? addCommas(subToEquityPayment) : subToEquityPayment
+
+  const toggleEquityMode = () => {
+    const val = parseFloat(subToEquityPayment) || 0
+    if (purchasePrice > 0 && val > 0) {
+      if (subToEquityIsPercent) {
+        // % → $ : convert percentage to dollar amount
+        setInput('subToEquityPayment', String(Math.round(purchasePrice * val / 100)))
+      } else {
+        // $ → % : convert dollar amount to percentage
+        setInput('subToEquityPayment', String(parseFloat((val / purchasePrice * 100).toFixed(2))))
+      }
+    }
+    setInput('subToEquityIsPercent', !subToEquityIsPercent)
+  }
 
   return (
     <>
@@ -292,41 +311,89 @@ function SubjectToInputs({ results }) {
         <StoreInput id="subToRate" label="Existing Rate %" suffix="%" step="0.125" />
         <StoreInput id="subToRemTerm" label="Remaining Term (Years)" />
       </div>
-      <div className={styles.row2}>
-        <StoreInput id="subToDownPayment" label="Down Payment to Seller" prefix="$" placeholder="0" />
+      <div className={styles.row3}>
+        <div className={styles.inputGroup}>
+          <label>Equity Buyout (to Seller)</label>
+          <div className={styles.inputWrap}>
+            <span className={styles.prefix}>{subToEquityIsPercent ? '%' : '$'}</span>
+            <input type={isDollar ? 'text' : 'number'} inputMode={isDollar ? 'decimal' : undefined}
+              value={eqDisplay}
+              onFocus={() => setEqFocused(true)}
+              onBlur={() => setEqFocused(false)}
+              onChange={e => {
+                const raw = isDollar ? e.target.value.replace(/,/g, '') : e.target.value
+                if (isDollar && raw !== '' && isNaN(Number(raw))) return
+                setInput('subToEquityPayment', raw)
+              }} />
+            <button type="button" className={styles.unitToggle}
+              onClick={toggleEquityMode}>
+              {subToEquityIsPercent ? '% → $' : '$ → %'}
+            </button>
+          </div>
+        </div>
         <div className={styles.checkRow} style={{ alignSelf: 'end', marginBottom: 2 }}>
           <input type="checkbox" id="subToEscrowCheck" checked={escrow === 'yes'}
             onChange={e => setInput('subToEscrow', e.target.checked ? 'yes' : 'no')} />
           <label htmlFor="subToEscrowCheck">Payment includes escrow (T&I)</label>
         </div>
-      </div>
-      <div className={styles.sectionTitle}>Seller Carry (Remaining Balance)</div>
-      <div className={styles.row2}>
-        <StoreInput id="subToSellerRate" label="Seller Carry Rate %" suffix="%" step="0.125" />
-        <StoreInput id="subToSellerAmort" label="Seller Carry Amort (Years)" />
-      </div>
-      <div className={styles.row2}>
-        <StoreInput id="subToBalloonYears" label="Balloon Period (Years)" />
-        <StoreInput id="subToRefiLtv" label="Refi LTV % at Balloon" suffix="%" />
-      </div>
-      <div className={styles.row2}>
-        <StoreInput id="subToAppreciation" label="Appreciation Rate % (Override)" suffix="%" placeholder="Use main" step="0.5" />
         <div />
       </div>
-      {results && (
+
+      <div className={styles.sectionTitle}>Seller Comparison</div>
+      <div className={styles.row3}>
+        <StoreInput id="subToListPrice" label="Seller's Asking Price" prefix="$" placeholder="0" />
+        <StoreInput id="subToCommissionPct" label="Agent Commission %" suffix="%" step="0.5" placeholder="6" />
+        <StoreInput id="subToClosingCosts" label="Seller Closing Costs" prefix="$" placeholder="0" />
+      </div>
+      {results && results.sellerComparison && (
         <div className={styles.offerSummary}>
+          <div className={styles.osTitle}>Traditional Sale vs. Your Offer</div>
+          <div className={styles.osRow}>
+            <span className={styles.osLabel}>Asking Price</span>
+            <span className={styles.osValue}>{fmt(results.sellerComparison.listPrice)}</span>
+          </div>
+          <div className={styles.osRow}>
+            <span className={styles.osLabel}>− Mortgage Payoff</span>
+            <span className={styles.osValue} style={{ color: '#ef4444' }}>({fmt(results.existingBalance)})</span>
+          </div>
+          <div className={styles.osRow}>
+            <span className={styles.osLabel}>− Commission ({results.sellerComparison.commissionPct}%)</span>
+            <span className={styles.osValue} style={{ color: '#ef4444' }}>({fmt(results.sellerComparison.commission)})</span>
+          </div>
+          <div className={styles.osRow}>
+            <span className={styles.osLabel}>− Closing Costs</span>
+            <span className={styles.osValue} style={{ color: '#ef4444' }}>({fmt(results.sellerComparison.closingCosts)})</span>
+          </div>
+          <div className={`${styles.osRow} ${styles.osTotal}`}>
+            <span className={styles.osLabel}>Seller Nets (Traditional)</span>
+            <span className={`${styles.osValue} ${results.sellerComparison.sellerNetTraditional < 0 ? styles.negative : ''}`}>
+              {fmt(results.sellerComparison.sellerNetTraditional)}
+            </span>
+          </div>
+          <div className={`${styles.osRow} ${styles.osTotal}`} style={{ marginTop: 4 }}>
+            <span className={styles.osLabel}>Seller Nets (Your Sub-To)</span>
+            <span className={styles.osValue} style={{ color: '#10b981' }}>{fmt(results.equityPayment)}</span>
+          </div>
+          <div className={`${styles.osRow} ${styles.osTotal}`}>
+            <span className={styles.osLabel}>
+              {results.sellerComparison.sellerAdvantage >= 0 ? 'Seller Saves with You' : 'Seller Loses vs. Traditional'}
+            </span>
+            <span className={styles.osValue} style={{ color: results.sellerComparison.sellerAdvantage >= 0 ? '#10b981' : '#ef4444', fontWeight: 700 }}>
+              {(results.sellerComparison.sellerAdvantage >= 0 ? '+' : '') + fmt(results.sellerComparison.sellerAdvantage)}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {results && (
+        <div className={styles.offerSummary} style={{ marginTop: 8 }}>
           <div className={styles.osTitle}>Subject-To Summary</div>
           <div className={styles.osRow}><span className={styles.osLabel}>Existing Mortgage</span><span className={styles.osValue}>{fmt(results.existingBalance)}</span></div>
           <div className={styles.osRow}><span className={styles.osLabel}>Existing Monthly Payment</span><span className={styles.osValue}>{fmt(results.existingMonthly)}</span></div>
-          {results.downPayment > 0 && (
-            <div className={styles.osRow}><span className={styles.osLabel}>Down Payment to Seller</span><span className={styles.osValue}>{fmt(results.downPayment)}</span></div>
+          {results.equityPayment > 0 && (
+            <div className={styles.osRow}><span className={styles.osLabel}>Equity Buyout to Seller</span><span className={styles.osValue}>{fmt(results.equityPayment)}</span></div>
           )}
-          {results.sellerCarryAmount > 0 && (
-            <>
-              <div className={styles.osRow}><span className={styles.osLabel}>Seller Carry (Remaining)</span><span className={styles.osValue}>{fmt(results.sellerCarryAmount)}</span></div>
-              <div className={styles.osRow}><span className={styles.osLabel}>Seller Monthly Payment</span><span className={styles.osValue}>{fmt(results.sellerMonthly)}</span></div>
-            </>
-          )}
+          <div className={styles.osRow}><span className={styles.osLabel}>Total Basis (Cash In)</span><span className={styles.osValue}>{fmt(results.equityPayment)}</span></div>
           <div className={`${styles.osRow} ${styles.osTotal}`}>
             <span className={styles.osLabel}>Monthly Cash Flow</span>
             <span className={`${styles.osValue} ${results.monthlyCF < 0 ? styles.negative : ''}`}>{fmt(results.monthlyCF)}</span>

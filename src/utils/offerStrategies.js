@@ -25,4 +25,4 @@ export const STRATEGY_PILL_LABELS = {
 }
 
 // Ordered list for iteration (pill rendering, etc.)
-export const STRATEGIES = [MORBY, SELLER_FINANCE, SUBJECT_TO]
+export const STRATEGIES = [SELLER_FINANCE, SUBJECT_TO]

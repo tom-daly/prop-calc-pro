@@ -4,6 +4,7 @@ import './styles/required.css'
 import styles from './App.module.css'
 import usePropertyStore from './store/usePropertyStore'
 import { OFFER } from './utils/modes'
+import { SUBJECT_TO } from './utils/offerStrategies'
 import Header from './components/Header'
 import PrintHeader from './components/PrintHeader'
 import ModeTabs from './components/ModeTabs'
@@ -30,6 +31,7 @@ import Footer from './components/Footer'
 
 export default function App() {
   const mode = usePropertyStore(s => s.currentMode)
+  const offerStrategy = usePropertyStore(s => s.offerStrategy)
   const initApp = usePropertyStore(s => s.initApp)
 
   useEffect(() => {
@@ -60,7 +62,7 @@ export default function App() {
           </div>
           <MilestonesCard />
           <AssetDebtChart />
-          {mode === OFFER && (
+          {mode === OFFER && offerStrategy !== SUBJECT_TO && (
             <>
               <BalloonAnalysis />
               <OfferAmortTable />

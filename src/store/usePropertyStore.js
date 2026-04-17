@@ -28,8 +28,9 @@ const DEFAULT_INPUTS = {
   sfDownPayment: '', sfDownIsPercent: false,
   sfSellerRate: '5', sfSellerAmort: '30', sfBalloonYears: '7', sfRefiLtv: '75', sfAppreciation: '',
   // Subject-To inputs
-  subToLoanBalance: '', subToRate: '', subToRemTerm: '25', subToEscrow: 'yes', subToDownPayment: '',
-  subToSellerRate: '5', subToSellerAmort: '30', subToBalloonYears: '7', subToRefiLtv: '75', subToAppreciation: '',
+  subToLoanBalance: '', subToRate: '', subToRemTerm: '25', subToEscrow: 'yes',
+  subToEquityPayment: '', subToEquityIsPercent: false,
+  subToListPrice: '', subToCommissionPct: '6', subToClosingCosts: '',
   // MAO
   maoTargetCF: '',
 }
@@ -54,7 +55,7 @@ const DEFAULT_JV_CONFIG = {
 const usePropertyStore = create(subscribeWithSelector((set, get) => ({
   currentPropertyId: null,
   currentMode: TRADITIONAL,
-  offerStrategy: MORBY,
+  offerStrategy: SELLER_FINANCE,
   inputs: { ...DEFAULT_INPUTS },
   expenseConfig: JSON.parse(JSON.stringify(DEFAULT_EXPENSE_CONFIG)),
   carryTranches: [],
@@ -73,7 +74,27 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
 
   // Actions
   setMode: (mode) => {
-    set({ currentMode: mode })
+    const prevMode = get().currentMode
+    const inputs = get().inputs
+    const isEmpty = v => v === '' || v === undefined || v === null
+
+    const updates = {}
+    // Carry closing/rehab between Traditional and BRRRR in either direction,
+    // only filling empty destination fields so explicit per-mode values survive.
+    if (prevMode === TRADITIONAL && mode === BRRRR) {
+      if (isEmpty(inputs.closingCostDscr) && !isEmpty(inputs.closingCost)) updates.closingCostDscr = inputs.closingCost
+      if (isEmpty(inputs.rehabCostDscr) && !isEmpty(inputs.rehabCost)) updates.rehabCostDscr = inputs.rehabCost
+    } else if (prevMode === BRRRR && mode === TRADITIONAL) {
+      if (isEmpty(inputs.closingCost) && !isEmpty(inputs.closingCostDscr)) updates.closingCost = inputs.closingCostDscr
+      if (isEmpty(inputs.rehabCost) && !isEmpty(inputs.rehabCostDscr)) updates.rehabCost = inputs.rehabCostDscr
+    }
+
+    if (Object.keys(updates).length > 0) {
+      set(state => ({ currentMode: mode, inputs: { ...state.inputs, ...updates } }))
+      get()._debouncedAutoSave()
+    } else {
+      set({ currentMode: mode })
+    }
     get().recalculate()
   },
 
@@ -152,12 +173,10 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
     const stressResults = runStressTest(inputs, expenseConfig, currentMode, carryTranches)
     let offerResults = null
     if (currentMode === OFFER) {
-      if (offerStrategy === SELLER_FINANCE) {
-        offerResults = calculateSellerFinance(inputs, expenseConfig)
-      } else if (offerStrategy === SUBJECT_TO) {
+      if (offerStrategy === SUBJECT_TO) {
         offerResults = calculateSubjectTo(inputs, expenseConfig)
       } else {
-        offerResults = calculateOffer(inputs, expenseConfig)
+        offerResults = calculateSellerFinance(inputs, expenseConfig)
       }
     }
     const maoResults = (currentMode !== OFFER) ? calculateMao(inputs, expenseConfig, currentMode, carryTranches) : null
@@ -223,7 +242,8 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
     const offerInputIds = [
       'morbyDownPct', 'morbyDscrRate', 'morbyDscrTerm', 'morbySellerRate', 'morbySellerAmort', 'morbyBalloonYears', 'morbyRefiLtv', 'morbyAppreciation',
       'sfDownPayment', 'sfDownIsPercent', 'sfSellerRate', 'sfSellerAmort', 'sfBalloonYears', 'sfRefiLtv', 'sfAppreciation',
-      'subToLoanBalance', 'subToRate', 'subToRemTerm', 'subToEscrow', 'subToDownPayment', 'subToSellerRate', 'subToSellerAmort', 'subToBalloonYears', 'subToRefiLtv', 'subToAppreciation',
+      'subToLoanBalance', 'subToRate', 'subToRemTerm', 'subToEscrow',
+      'subToEquityPayment', 'subToEquityIsPercent', 'subToListPrice', 'subToCommissionPct', 'subToClosingCosts',
     ]
 
     const { offerStrategy } = get()
@@ -310,7 +330,7 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
       carryTranches,
       jvConfig,
       currentMode: data.currentMode || TRADITIONAL,
-      offerStrategy: data.offerStrategy || MORBY,
+      offerStrategy: data.offerStrategy || SELLER_FINANCE,
     })
     get().recalculate()
   },
@@ -320,7 +340,7 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
     set({
       currentPropertyId: null,
       currentMode: TRADITIONAL,
-      offerStrategy: MORBY,
+      offerStrategy: SELLER_FINANCE,
       inputs: { ...DEFAULT_INPUTS },
       expenseConfig: JSON.parse(JSON.stringify(DEFAULT_EXPENSE_CONFIG)),
       carryTranches: [],
@@ -395,7 +415,7 @@ const usePropertyStore = create(subscribeWithSelector((set, get) => ({
       set({
         currentPropertyId: saved.currentPropertyId,
         currentMode: saved.currentMode || TRADITIONAL,
-        offerStrategy: saved.offerStrategy || MORBY,
+        offerStrategy: saved.offerStrategy || SELLER_FINANCE,
         inputs: newInputs,
         expenseConfig,
         carryTranches: saved.carryTranches || [],

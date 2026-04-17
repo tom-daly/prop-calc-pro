@@ -11,8 +11,8 @@ export default function OfferMetricsBar() {
   const annualDebt = r.totalMonthlyDebt * 12
   const dscrRatio = annualDebt > 0 ? r.noi / annualDebt : 0
 
-  // Cash basis depends on strategy: Morby = DSCR loan (down payment), SF = down payment, SubTo = down payment
-  const cashBasis = r.dscrLoanAmount || r.sfDownAmt || r.downPayment || 0
+  // Cash basis depends on strategy: Morby = DSCR loan (down payment), SF = down payment, SubTo = equity buyout
+  const cashBasis = r.dscrLoanAmount || r.sfDownAmt || r.equityPayment || 0
   const cashOnCash = cashBasis > 0 ? (annualCF / cashBasis) * 100 : 0
 
   return (

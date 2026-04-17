@@ -1,0 +1,220 @@
+{
+  "analyzedOn": "2026-04-17",
+  "market": "Memphis, TN",
+  "assumptions": {
+    "refiLtv": 0.75,
+    "interestRate": 0.07,
+    "loanTerm": 30,
+    "carryMonths": 6,
+    "carryRate": 0.05,
+    "vacancyRate": 0.05,
+    "closingPctOfPurchase": 0.03,
+    "notes": "BRRRR scenarios use 75% refi LTV; Traditional uses 25% down."
+  },
+  "zipCodes": {
+    "38115": {
+      "neighborhood": "Hickory Hill",
+      "recentZhvi": 170000,
+      "medianSaleDec2025": 189000,
+      "yoyChange": -0.024,
+      "fiveYearEstimate": "~5-10% cumulative (soft)",
+      "comment": "Cooling. Below Memphis average."
+    },
+    "38118": {
+      "neighborhood": "Oakhaven / Airport",
+      "recentZhvi": 123000,
+      "median2023": 95700,
+      "fiveYearEstimate": "~20-25% net (2019-2023 +30% then flat-to-down)",
+      "comment": "Pandemic pop already digested. Be conservative on forward appreciation."
+    },
+    "38122": {
+      "neighborhood": "Berclair",
+      "recentZhvi": 123000,
+      "median2023": 108200,
+      "fiveYearEstimate": "~35-40% net (2019-2023 +51%, cooling since)",
+      "comment": "Strongest 5-yr track record of the three; gentrification play but cooling."
+    }
+  },
+  "memphisMsa": {
+    "yoyHpi": 0.019,
+    "fiveYearHpiEstimate": "~18-22% cumulative",
+    "forwardOutlook": "Flat-to-low single-digit appreciation expected in inner-ring zips."
+  },
+  "properties": [
+    {
+      "id": "bishops-bridge",
+      "address": "3635 Bishops Bridge Rd, Memphis, TN 38118",
+      "zip": "38118",
+      "listing": "MLS",
+      "occupancy": "Owner Occupied",
+      "bedsBath": "3/1.5",
+      "sqft": 1470,
+      "yearBuilt": 1957,
+      "listPrice": 105000,
+      "suggestedOffer": 95000,
+      "arv": 145000,
+      "rehabEstimate": 20000,
+      "annualTaxes": 1535.12,
+      "insurance": 950,
+      "marketRent": 1200,
+      "brrrr": {
+        "purchase": 95000,
+        "closingCost": 2850,
+        "carry": 2946,
+        "refiLoan": 108750,
+        "cashLeftInDeal": 12046,
+        "dscr": 1.29,
+        "capRate": 0.0875,
+        "monthlyCashFlow": -31,
+        "cashOnCash": -0.0305
+      },
+      "ranking": 3,
+      "notes": "Financeable (DSCR strong) but breakeven cash flow. Low rent vs basis."
+    },
+    {
+      "id": "keystone",
+      "address": "6743 Keystone Dr, Memphis, TN 38115",
+      "zip": "38115",
+      "listing": "Off Market",
+      "occupancy": "Vacant",
+      "bedsBath": "3/2",
+      "sqft": 1257,
+      "yearBuilt": 1984,
+      "listPrice": 118500,
+      "suggestedOffer": 112000,
+      "arv": 165000,
+      "rehabEstimate": 20000,
+      "annualTaxes": 1859.28,
+      "insurance": 950,
+      "marketRent": 1500,
+      "brrrr": {
+        "purchase": 112000,
+        "closingCost": 3360,
+        "carry": 3384,
+        "refiLoan": 123750,
+        "cashLeftInDeal": 14994,
+        "dscr": 1.42,
+        "capRate": 0.0955,
+        "monthlyCashFlow": 68,
+        "cashOnCash": 0.0541
+      },
+      "ranking": 2,
+      "notes": "Best balance of the MLS-priced deals. Positive cash flow, decent condition, 3/2 layout helps rentability."
+    },
+    {
+      "id": "victor",
+      "address": "3964 Victor Dr, Memphis, TN 38122",
+      "zip": "38122",
+      "listing": "Off Market",
+      "occupancy": "Vacant",
+      "bedsBath": "3/1",
+      "sqft": 1234,
+      "yearBuilt": 1949,
+      "listPrice": 71500,
+      "suggestedOffer": 65000,
+      "arv": 130000,
+      "rehabEstimate": 20000,
+      "rehabRevised": 45000,
+      "rehabRevisedReason": "Property is pretty much ruined — per user inspection, true renovation is $40-50k",
+      "annualTaxes": 1108.19,
+      "insurance": 800,
+      "marketRent": 1200,
+      "brrrrAtRevisedRehab": {
+        "purchase": 65000,
+        "rehab": 45000,
+        "closingCost": 1950,
+        "carry": 2799,
+        "refiLoan": 97500,
+        "cashLeftInDeal": 17249,
+        "dscr": 1.49,
+        "capRate": 0.1368,
+        "monthlyCashFlow": 92,
+        "cashOnCash": 0.0642,
+        "notes": "At $65k purchase with $45k rehab, leaves $17k in the deal. No longer a clean BRRRR."
+      },
+      "brrrrAtMaoBreakpoint": {
+        "purchase": 45000,
+        "rehab": 45000,
+        "closingCost": 1350,
+        "carry": 2284,
+        "refiLoan": 97500,
+        "cashOutAtRefi": 3866,
+        "dscr": 1.49,
+        "capRate": 0.1976,
+        "monthlyCashFlow": 92,
+        "notes": "True BRRRR math at $45k purchase — full capital recycle plus $3.8k cash-out. 70% rule MAO = $46k."
+      },
+      "ranking": 1,
+      "notes": "Best deal ONLY if you can secure at $40-46k purchase. At $65k with $45k rehab it becomes #4. Target $40-42k for rehab-overrun buffer."
+    },
+    {
+      "id": "sunray",
+      "address": "5303 Sunray Dr, Memphis, TN 38118",
+      "zip": "38118",
+      "listing": "MLS",
+      "occupancy": "Owner Occupied",
+      "bedsBath": "3/2",
+      "sqft": 1546,
+      "yearBuilt": 1976,
+      "listPrice": 135000,
+      "suggestedOffer": 125000,
+      "arv": 160000,
+      "rehabEstimate": 10000,
+      "annualTaxes": 1570.70,
+      "insurance": 900,
+      "marketRent": 1300,
+      "brrrr": {
+        "purchase": 125000,
+        "closingCost": 3750,
+        "carry": 3469,
+        "refiLoan": 120000,
+        "cashLeftInDeal": 22219,
+        "dscr": 1.29,
+        "capRate": 0.0738,
+        "monthlyCashFlow": -29,
+        "cashOnCash": -0.0158,
+        "notes": "Not a BRRRR at this price. 70% rule MAO is ~$102k."
+      },
+      "traditional": {
+        "purchase": 125000,
+        "downPct": 0.25,
+        "downAmount": 31250,
+        "closingCost": 3750,
+        "rehab": 10000,
+        "totalOutOfPocket": 45000,
+        "loanAmount": 93750,
+        "dscr": 1.57,
+        "capRate": 0.0738,
+        "monthlyCashFlow": 145,
+        "cashOnCash": 0.0388,
+        "dayOneEquity": 35000,
+        "notes": "Works as traditional buy-and-hold. 3.88% CoC plus ~$35k day-one equity (ARV - loan - down)."
+      },
+      "ranking": 4,
+      "notes": "Best condition of the four but priced to match. Traditional hold makes sense; BRRRR does not at list or suggested offer."
+    }
+  ],
+  "rankings": {
+    "asBrrrr": [
+      "victor (IF purchased at $40-46k)",
+      "keystone",
+      "bishops-bridge",
+      "sunray (does not pencil as BRRRR)"
+    ],
+    "asTraditionalHold": [
+      "sunray (+$145/mo, $35k day-one equity)",
+      "keystone (+$68/mo, good condition)",
+      "bishops-bridge",
+      "victor (condition too rough for trad)"
+    ]
+  },
+  "keyTakeaways": [
+    "BRRRR math hinges on refi recycling capital — 70% rule MAO = ARV*0.70 - rehab.",
+    "Victor only works as BRRRR if purchase ≤ $46k given the $45k true rehab cost.",
+    "Sunray is a traditional hold, not a BRRRR — decent day-one equity from a below-list offer.",
+    "Keystone is the most balanced deal: off-market, vacant, 3/2, positive CF out of the gate.",
+    "Bishops Bridge is breakeven — financeable but no margin.",
+    "38122 has the strongest historical appreciation of the three zips; 38115 is cooling; 38118 is soft.",
+    "Use 0-3% appreciation in underwriting for these zips, not the national average."
+  ]
+}
